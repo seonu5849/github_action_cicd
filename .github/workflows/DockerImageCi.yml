@@ -24,6 +24,8 @@ jobs:
         with:
           java-version: '21'
           distribution: 'temurin'
+        env:
+          JAVA_HOME: ${{ env.JAVA_HOME_21_X64 }}  ## 환경변수 강제 설정
 
       ## Docker 이미지 빌드 단계
 #      - name: Build the Docker image
