@@ -51,7 +51,7 @@ jobs:
       ## 도커 컨테이너 끼리 파일 복사하여 이동
       - name: Deploy Application
         run: |
-          apps=("app-1", "app-2")
+          apps=("app-1" "app-2")
           for app in ${apps[@]}; 
           do
             sudo docker cp $GITHUB_WORKSPACE/build/libs/github_action.jar $apps:/home/ubuntu
@@ -76,7 +76,7 @@ jobs:
       ## 각 docker container로 보낸 jar를 각 컨테이너에서 실행
       - name: Run Application
         run: |
-          apps=("app-1", "app-2")
+          apps=("app-1" "app-2")
           for app in ${apps[@]}; 
           do
             docker exec $app /bin/bash -c "chmod +x ./run.sh && sudo ./run.sh"
