@@ -39,7 +39,7 @@ jobs:
         run: cp $GITHUB_WORKSPACE/build/libs/github_action.jar /home/ubuntu
 
       ## Docker 이미지 빌드 단계
-#      - name: Build the Docker image
-#        run: docker build -f Dockerfile -t my-image-name:$(date +%s) .
-#        ## 타임스탬프 기반 태그 생성 (배포 시 무결성 보장)
-#        ## 실제 프로덕션에서는 버전 태그 사용 권장 (예: v1.0.0)
+      - name: Build the Docker image
+        run: docker build -f Dockerfile -t ApiDockerfile .
+        ## 타임스탬프 기반 태그 생성 (배포 시 무결성 보장)
+        ## 실제 프로덕션에서는 버전 태그 사용 권장 (예: v1.0.0)
