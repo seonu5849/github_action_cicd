@@ -27,6 +27,10 @@ jobs:
 #          distribution: 'temurin'
 #        env:
 #          JAVA_HOME: ${{ env.JAVA_HOME_21_X64 }}  ## 환경변수 강제 설정
+      
+      ## java 버전 확인
+      - name: Check Java Version
+        run: java -version
 
       ## gradle의 실행권한 부여와 build 수행
       - name: Grant execute permission for gradlew
@@ -39,11 +43,15 @@ jobs:
     needs: [ build ] ## build가 수행되어야만 deploy가 수행
     steps:
       ## jar를 사용하기 쉽게 밖으로 복사
-      - name: Copy JAR file to Home
+      - name: Deploy Application
         run: cp $GITHUB_WORKSPACE/build/libs/github_action.jar /home/ubuntu
 
-      ## Docker 이미지 빌드 단계
-      - name: Build the Docker image
-        run: sudo docker build -f /home/ubuntu/api_dockerfile -t api_image .
-        ## 타임스탬프 기반 태그 생성 (배포 시 무결성 보장)
-        ## 실제 프로덕션에서는 버전 태그 사용 권장 (예: v1.0.0)
+#      ## Docker 이미지 빌드 단계
+#      - name: Build the Docker image
+#        run: sudo docker build -f /home/ubuntu/api_dockerfile -t api_image .
+#        ## 타임스탬프 기반 태그 생성 (배포 시 무결성 보장)
+#        ## 실제 프로덕션에서는 버전 태그 사용 권장 (예: v1.0.0)
+
+      ## application 실행
+      - name: Run Application
+        run: nohup java -jar github_action.jar --spring.profiles.active=local-docker > api.log &
