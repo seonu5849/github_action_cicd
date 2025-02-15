@@ -19,6 +19,12 @@ jobs:
       ## 저장소 코드 체크아웃 (필수 초기 단계)
       - uses: actions/checkout@v4  ## 버전 v4의 공식 체크아웃 액션 사용
 
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
       ## Docker 이미지 빌드 단계
 #      - name: Build the Docker image
 #        run: docker build -f Dockerfile -t my-image-name:$(date +%s) .
