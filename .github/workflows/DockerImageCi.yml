@@ -40,6 +40,6 @@ jobs:
 
       ## Docker 이미지 빌드 단계
       - name: Build the Docker image
-        run: sudo docker build -f api_dockerfile -t api_image .
+        run: sudo docker build -f /home/ubuntu/api_dockerfile -t api_image .
         ## 타임스탬프 기반 태그 생성 (배포 시 무결성 보장)
         ## 실제 프로덕션에서는 버전 태그 사용 권장 (예: v1.0.0)
