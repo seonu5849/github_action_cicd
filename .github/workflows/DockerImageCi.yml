@@ -54,4 +54,4 @@ jobs:
 
       ## application 실행
       - name: Run Application
-        run: nohup java -jar github_action.jar --spring.profiles.active=local-docker > api.log &
+        run: nohup java -jar /home/ubuntu/github_action.jar --spring.profiles.active=local-docker > api.log &
