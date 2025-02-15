@@ -34,6 +34,10 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew clean build --exclude-task test
 
+  deploy:
+    runs-on: self-hosted
+    needs: [ build ] ## build가 수행되어야만 deploy가 수행
+    steps:
       ## jar를 사용하기 쉽게 밖으로 복사
       - name: Copy JAR file to Home
         run: cp $GITHUB_WORKSPACE/build/libs/github_action.jar /home/ubuntu
