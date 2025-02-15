@@ -1,0 +1,14 @@
+# ubuntu 이미지를 바탕으로
+FROM ubuntu:24.04
+
+#root user로 수행
+USER root
+
+#sudo, vim 라이브러리 설치
+RUN apt-get update && apt-get install sudo vim -y
+
+# 'ubuntu' 사용자에게 모든 명령어에 대해 비밀번호 없이 sudo 권한을 주기 위해 sudoers 파일 수정
+RUN echo "ubuntu ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+
+#기본 명령어로 bash 실행
+CMD ["/bin/bash"]
