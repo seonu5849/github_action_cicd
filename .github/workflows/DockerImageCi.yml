@@ -1,0 +1,24 @@
+name: Docker Image CI   ## GitHub Actions 대시보드에 표시될 워크플로 이름
+run-name: Deploy to ${{ inputs.deploy_target }} by @${{ github.actor }}   ## 실행 시 "Deploy to [대상] by @사용자명" 형식으로 표시
+
+## 트리거 설정 (이벤트 발생 시 워크플로 실행)
+on:
+  push:
+    branches: [ "main" ]  ## main 브랜치에 push 이벤트 발생 시 실행
+#  pull_request:         ## 주석 해제 시 main 브랜치 PR 이벤트로도 실행
+#    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: self-hosted  ## 셀프호스팅 러너 사용 (GitHub 호스트 대신 사용자 인프라 사용)
+
+    steps:
+      ## 저장소 코드 체크아웃 (필수 초기 단계)
+      - name: Check out repository code
+      - uses: actions/checkout@v4  ## 버전 v4의 공식 체크아웃 액션 사용
+
+      ## Docker 이미지 빌드 단계
+#      - name: Build the Docker image
+#        run: docker build -f Dockerfile -t my-image-name:$(date +%s) .
+#        ## 타임스탬프 기반 태그 생성 (배포 시 무결성 보장)
+#        ## 실제 프로덕션에서는 버전 태그 사용 권장 (예: v1.0.0)
