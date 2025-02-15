@@ -17,7 +17,6 @@ jobs:
 
     steps:
       ## 저장소 코드 체크아웃 (필수 초기 단계)
-      - name: Check out repository code
       - uses: actions/checkout@v4  ## 버전 v4의 공식 체크아웃 액션 사용
 
       ## Docker 이미지 빌드 단계
