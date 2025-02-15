@@ -1,6 +1,32 @@
 spring:
+  profiles:
+    default: local
+    group:
+      local: local, common
+      local-docker: local-docker, common
+---
+spring:
+  config:
+    activate:
+      on-profile: common
   application:
     name: github_action_cicd
 
+---
+spring:
+  config:
+    activate:
+      on-profile: local
+
 server:
   port: 8088
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: local-docker
+
+server:
+  port: 8080
