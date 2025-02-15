@@ -38,7 +38,7 @@ jobs:
           ls -l $GITHUB_WORKSPACE/build/libs/*.jar
 
       - name: Copy JAR file to Home
-        run: cp $GITHUB_WORKSPACE/build/libs/github_action.jar /
+        run: cp $GITHUB_WORKSPACE/build/libs/github_action.jar /home/ubuntu
 
       ## Docker 이미지 빌드 단계
 #      - name: Build the Docker image
