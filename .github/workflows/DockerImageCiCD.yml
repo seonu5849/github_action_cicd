@@ -79,6 +79,6 @@ jobs:
           apps=("app-1" "app-2")
           for app in ${apps[@]}; 
           do
-            sudo docker exec $app /bin/bash -c "chmod +x /home/ubuntu/run.sh && sudo /home/ubuntu/run.sh"
+            sudo docker exec $app /bin/bash -c "chmod +x ./run.sh && sudo ./run.sh"
           done
         ## -c 옵션은 Bash쉘에 전달할 명령을 문자열로 지정

@@ -19,7 +19,6 @@ x-ubuntu-server: &ubuntu-container-settings
 services:
   cicd:
     container_name: cicd
-    privileged: true
     <<: *ubuntu-container-settings
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock  # 호스트의 docker.sock을 컨테이너로 공유
