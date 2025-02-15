@@ -1,0 +1,6 @@
+spring:
+  application:
+    name: github_action_cicd
+
+server:
+  port: 8088
