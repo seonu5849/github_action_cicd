@@ -22,7 +22,6 @@ server:
   port: 8088
 
 ---
-
 spring:
   config:
     activate:
