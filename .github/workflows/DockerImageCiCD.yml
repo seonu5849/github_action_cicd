@@ -55,8 +55,8 @@ jobs:
           for app in ${apps[@]};
           do
             echo "컨테이너: $app"
-            sudo docker cp $GITHUB_WORKSPACE/build/libs/github_action.jar $apps:/home/ubuntu
-            sudo docker cp $GITHUB_WORKSPACE/script/run.sh $apps:/home/ubuntu
+            sudo docker cp $GITHUB_WORKSPACE/build/libs/github_action.jar $app:/home/ubuntu
+            sudo docker cp $GITHUB_WORKSPACE/script/run.sh $app:/home/ubuntu
           done
 
       - name: Copy Docker-Compose and DockerFile to Home
