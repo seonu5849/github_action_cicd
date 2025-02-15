@@ -48,6 +48,11 @@ jobs:
           cp $GITHUB_WORKSPACE/build/libs/github_action.jar /home/ubuntu
           cp $GITHUB_WORKSPACE/script/run.sh /home/ubuntu
 
+      - name: Copy Docker-Compose and DockerFile to Home
+        run: |
+          cp $GITHUB_WORKSPACE/infra/docker-compose.yml /home/ubuntu
+          cp $GITHUB_WORKSPACE/infra/UbuntuDockerfile /home/ubuntu
+
 #      ## Docker 이미지 빌드 단계
 #      - name: Build the Docker image
 #        run: sudo docker build -f /home/ubuntu/api_dockerfile -t api_image .
