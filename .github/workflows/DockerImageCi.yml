@@ -1,5 +1,7 @@
-name: Docker Image CI   ## GitHub Actions 대시보드에 표시될 워크플로 이름
-run-name: Deploy to ${{ inputs.deploy_target }} by @${{ github.actor }}   ## 실행 시 "Deploy to [대상] by @사용자명" 형식으로 표시
+## GitHub Actions 대시보드에 표시될 워크플로 이름
+name: Docker Image CI
+## 실행 시 "Deploy to [대상] by @사용자명" 형식으로 표시
+run-name: Deploy to ${{ inputs.deploy_target }} by @${{ github.actor }}
 
 ## 트리거 설정 (이벤트 발생 시 워크플로 실행)
 on:
@@ -10,7 +12,8 @@ on:
 
 jobs:
   build:
-    runs-on: self-hosted  ## 셀프호스팅 러너 사용 (GitHub 호스트 대신 사용자 인프라 사용)
+    ## 셀프호스팅 러너 사용 (GitHub 호스트 대신 사용자 인프라 사용)
+    runs-on: self-hosted
 
     steps:
       ## 저장소 코드 체크아웃 (필수 초기 단계)
