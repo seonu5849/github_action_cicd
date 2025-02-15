@@ -45,8 +45,8 @@ jobs:
       ## jar를 사용하기 쉽게 밖으로 복사
       - name: Deploy Application
         run: |
-          cp $GITHUB_WORKSPACE/build/libs/github_action.jar $app:/home/ubuntu
-          cp $GITHUB_WORKSPACE/script/run.sh $app:/home/ubuntu
+          cp $GITHUB_WORKSPACE/build/libs/github_action.jar /home/ubuntu
+          cp $GITHUB_WORKSPACE/script/run.sh /home/ubuntu
 
 #      ## Docker 이미지 빌드 단계
 #      - name: Build the Docker image
@@ -56,4 +56,4 @@ jobs:
 
       ## application 실행
       - name: Run Application
-        run: sudo sh $app:/home/ubuntu/run.sh
+        run: sudo sh /home/ubuntu/run.sh
