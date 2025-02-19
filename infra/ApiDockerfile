@@ -1,8 +1,5 @@
 FROM eclipse-temurin:21.0.2_13-jre
 WORKDIR /workspaces
 
-# 상대경로로 작성, 어디서 복사해서 가져올 것인지
-COPY github_action.jar .
-
 # WORKDIR 내에서 생성할 명령어
 CMD ["java", "-jar", "github_action.jar", "--spring.profiles.active=local-docker"]
