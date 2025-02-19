@@ -80,10 +80,10 @@ jobs:
       - name: Copy Docker-Compose and DockerFile to Home
         run: |
           mkdir ~/workspaces && cd ~/workspaces
-          cp $GITHUB_WORKSPACE/infra/api-docker-compose.yml /home/ubuntu/workspaces
-          cp $GITHUB_WORKSPACE/infra/ApiDockerfile /home/ubuntu/workspaces
-          cp $GITHUB_WORKSPACE/build/libs/github_action.jar /home/ubuntu/workspaces
+          cp $GITHUB_WORKSPACE/infra/api-docker-compose.yml .
+          cp $GITHUB_WORKSPACE/infra/ApiDockerfile .
+          cp $GITHUB_WORKSPACE/build/libs/github_action.jar .
 
       - name: Run Application
         run: |
-          sudo docker compose -f api-docker-compose.yml up -d --build
+          sudo docker compose -f ~/workspaces/api-docker-compose.yml up -d --build
