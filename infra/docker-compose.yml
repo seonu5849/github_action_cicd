@@ -48,5 +48,10 @@ services:
     ports:
       - '8082:8080'
     <<: *ubuntu-container-settings
+
 volumes:
   postgresql_data:
+
+networks:
+  shinemuscat:
+    external: true
