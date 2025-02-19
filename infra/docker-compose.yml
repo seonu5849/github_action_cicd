@@ -17,8 +17,22 @@ x-ubuntu-server: &ubuntu-container-settings
 
 # services settings
 services:
+  postgresql:
+    container_name: postgresql
+    image: docker.io/bitnami/postgresql:17
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgresql_data:/bitnami/postgresql
+      #- /docker-entrypoint-initdb.d
+      #- /docker-entrypoint-preinitdb.d
+    environment:
+      POSTGRESQL_DATABASE: postgres
+      POSTGRESQL_USERNAME: postgres
+      POSTGRESQL_PASSWORD: 1234
   cicd:
     container_name: cicd
+    platform: linux/amd64 # mac 에서 rosetta 오류로 인해 추가
     <<: *ubuntu-container-settings
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock  # 호스트의 docker.sock을 컨테이너로 공유
@@ -34,3 +48,5 @@ services:
     ports:
       - '8082:8080'
     <<: *ubuntu-container-settings
+volumes:
+  postgresql_data:
