@@ -86,4 +86,4 @@ jobs:
 
       - name: Run Application
         run: |
-          sudo docker compose -f ~/workspaces/api-docker-compose.yml up -d --build
+          sudo docker compose -f ~/workspaces/api-docker-compose.yml up -d --build --no-cache
