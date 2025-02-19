@@ -11,12 +11,34 @@ spring:
       on-profile: common
   application:
     name: github_action_cicd
+  jpa:
+    open-in-view: false #Client에게 응답이 되고 난 후에 DB 커넥션을 반납
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+        show_sql: true
+        highlight_sql: true
+logging:
+  level:
+    org.hibernate.type.descriptor.sql: trace # jpa logging
+# docs
+springdoc:
+  api-docs:
+    enabled: true
+  use-fqn: true #전체 경로로 클래스 구분.
 
 ---
 spring:
   config:
     activate:
       on-profile: local
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/postgres # local -> docker postgresql
+    username: postgres
+    password: 1234
 
 server:
   port: 8088
@@ -26,6 +48,11 @@ spring:
   config:
     activate:
       on-profile: local-docker
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://postgresql:5432/postgres # 'postgresql'은 Docker Compose에서 서비스 이름
+    username: postgres
+    password: 1234
 
 server:
   port: 8080
