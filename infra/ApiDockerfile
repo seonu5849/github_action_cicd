@@ -1,5 +1,7 @@
 FROM eclipse-temurin:21.0.2_13-jre
-WORKDIR ~/actions-runner/_work/github_action_cicd/github_action_cicd/build/libs/
+WORKDIR /workspaces
+
+COPY ~/actions-runner/_work/github_action_cicd/github_action_cicd/build/libs/github_action.jar .
 
 # WORKDIR 내에서 생성할 명령어
 CMD ["java", "-jar", "github_action.jar", "--spring.profiles.active=local-docker"]
