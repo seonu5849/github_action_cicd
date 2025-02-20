@@ -94,9 +94,9 @@ jobs:
 
       - name: Copy Docker-Compose and DockerFile to Home
         run: |
-          cp $GITHUB_WORKSPACE/infra/api-docker-compose.yml .
-          cp $GITHUB_WORKSPACE/infra/ApiDockerfile .
-          cp $GITHUB_WORKSPACE/build/libs/github_action.jar .
+          \cp -rf $GITHUB_WORKSPACE/infra/api-docker-compose.yml .
+          \cp -rf $GITHUB_WORKSPACE/infra/ApiDockerfile .
+          \cp -rf $GITHUB_WORKSPACE/build/libs/github_action.jar .
 
       - name: Run Application
         run: |
