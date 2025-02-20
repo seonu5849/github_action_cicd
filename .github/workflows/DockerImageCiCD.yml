@@ -81,11 +81,6 @@ jobs:
         # /home/ubuntu/actions-runner/_work/github_action_cicd/github_action_cicd
         # $GITHUB_WORKSPACE와 동일
 
-      ## dockerfile로 이미지화 시킨 후 application 실행 ---------------
-#      - name: Cleaning Up Files
-#        run: |
-#          rmdir -rf ~/workspaces
-
       - name: Create Workspaces Directory
         run: |
           if [ ! -d ~/workspaces ]; then
