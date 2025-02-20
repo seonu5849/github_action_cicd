@@ -92,11 +92,11 @@ jobs:
             mkdir ~/workspaces
           fi
 
-      - name: Copy Docker-Compose and DockerFile to Home
+      - name: Copy Docker-Compose and DockerFile to Workspaces
         run: |
-          \cp -rf $GITHUB_WORKSPACE/infra/api-docker-compose.yml .
-          \cp -rf $GITHUB_WORKSPACE/infra/ApiDockerfile .
-          \cp -rf $GITHUB_WORKSPACE/build/libs/github_action.jar .
+          cp $GITHUB_WORKSPACE/infra/api-docker-compose.yml ~/workspaces
+          cp $GITHUB_WORKSPACE/infra/ApiDockerfile ~/workspaces
+          cp $GITHUB_WORKSPACE/build/libs/github_action.jar ~/workspaces
 
       - name: Run Application
         run: |
