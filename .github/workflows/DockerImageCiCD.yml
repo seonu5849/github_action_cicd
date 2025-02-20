@@ -76,14 +76,17 @@ jobs:
 #          done
         ## -c 옵션은 Bash쉘에 전달할 명령을 문자열로 지정
 
-      ## dockerfile로 이미지화 시킨 후 application 실행 ---------------
-      - name: Copy Docker-Compose and DockerFile to Home
-        run: |
-          mkdir ~/workspaces && cd ~/workspaces
-          cp $GITHUB_WORKSPACE/infra/api-docker-compose.yml .
-          cp $GITHUB_WORKSPACE/infra/ApiDockerfile .
-          cp $GITHUB_WORKSPACE/build/libs/github_action.jar .
+      - name: Current Directory
+        run: echo $(pwd)
 
-      - name: Run Application
-        run: |
-          sudo docker compose -f ~/workspaces/api-docker-compose.yml up -d --build
+      ## dockerfile로 이미지화 시킨 후 application 실행 ---------------
+#      - name: Copy Docker-Compose and DockerFile to Home
+#        run: |
+#          mkdir ~/workspaces && cd ~/workspaces
+#          cp $GITHUB_WORKSPACE/infra/api-docker-compose.yml .
+#          cp $GITHUB_WORKSPACE/infra/ApiDockerfile .
+#          cp $GITHUB_WORKSPACE/build/libs/github_action.jar .
+#
+#      - name: Run Application
+#        run: |
+#          sudo docker compose -f ~/workspaces/api-docker-compose.yml up -d --build
