@@ -78,15 +78,17 @@ jobs:
 
       - name: Current Directory
         run: echo $(pwd)
+        # /home/ubuntu/actions-runner/_work/github_action_cicd/github_action_cicd
+        # :GITHUB_WORKSPACE와 동일
 
       ## dockerfile로 이미지화 시킨 후 application 실행 ---------------
-#      - name: Copy Docker-Compose and DockerFile to Home
-#        run: |
-#          mkdir ~/workspaces && cd ~/workspaces
-#          cp $GITHUB_WORKSPACE/infra/api-docker-compose.yml .
-#          cp $GITHUB_WORKSPACE/infra/ApiDockerfile .
-#          cp $GITHUB_WORKSPACE/build/libs/github_action.jar .
-#
-#      - name: Run Application
-#        run: |
-#          sudo docker compose -f ~/workspaces/api-docker-compose.yml up -d --build
+      - name: Copy Docker-Compose and DockerFile to Home
+        run: |
+          mkdir ~/workspaces && cd ~/workspaces
+          cp $GITHUB_WORKSPACE/infra/api-docker-compose.yml .
+          cp $GITHUB_WORKSPACE/infra/ApiDockerfile .
+          cp $GITHUB_WORKSPACE/build/libs/github_action.jar .
+
+      - name: Run Application
+        run: |
+          sudo docker compose -f ~/workspaces/api-docker-compose.yml up -d --build
