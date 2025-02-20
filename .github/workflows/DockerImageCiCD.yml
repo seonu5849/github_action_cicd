@@ -97,4 +97,4 @@ jobs:
 #        run: |
 #          sudo docker compose -f ~/workspaces/api-docker-compose.yml up -d --build
       - name: RUN APPLICATION
-        run: sudo $GITHUB_WORKSPACE/script/docker-run.sh
+        run: sudo sh $GITHUB_WORKSPACE/script/docker-run.sh
