@@ -86,12 +86,17 @@ jobs:
 #        run: |
 #          rmdir -rf ~/workspaces
 
+      - name: Create Workspaces Directory
+        run: |
+          if [ ! -d ~/workspaces ]; then
+            mkdir ~/workspaces
+          fi
+
       - name: Copy Docker-Compose and DockerFile to Home
         run: |
-          mkdir ~/workspaces && cd ~/workspaces
-          \cp -f $GITHUB_WORKSPACE/infra/api-docker-compose.yml .
-          \cp -f $GITHUB_WORKSPACE/infra/ApiDockerfile .
-          \cp -f $GITHUB_WORKSPACE/build/libs/github_action.jar .
+          cp $GITHUB_WORKSPACE/infra/api-docker-compose.yml .
+          cp $GITHUB_WORKSPACE/infra/ApiDockerfile .
+          cp $GITHUB_WORKSPACE/build/libs/github_action.jar .
 
       - name: Run Application
         run: |
