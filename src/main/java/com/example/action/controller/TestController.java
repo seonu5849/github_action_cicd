@@ -37,5 +37,11 @@ public class TestController {
         return "success";
     }
 
+    @DeleteMapping("/{id}")
+    public String testDelete(@PathVariable Long id) {
+        testRepository.deleteById(id);
+
+        return "success";
+    }
 
 }
