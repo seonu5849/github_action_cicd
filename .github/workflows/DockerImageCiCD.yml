@@ -76,23 +76,25 @@ jobs:
 #          done
         ## -c 옵션은 Bash쉘에 전달할 명령을 문자열로 지정
 
-      - name: Current Directory
-        run: echo $(pwd)
+#      - name: Current Directory
+#        run: echo $(pwd)
         # /home/ubuntu/actions-runner/_work/github_action_cicd/github_action_cicd
         # $GITHUB_WORKSPACE와 동일
 
-      - name: Create Workspaces Directory
-        run: |
-          if [ ! -d ~/workspaces ]; then
-            mkdir ~/workspaces
-          fi
-
-      - name: Copy Docker-Compose and DockerFile to Workspaces
-        run: |
-          cp $GITHUB_WORKSPACE/infra/api-docker-compose.yml ~/workspaces
-          cp $GITHUB_WORKSPACE/infra/ApiDockerfile ~/workspaces
-          cp $GITHUB_WORKSPACE/build/libs/github_action.jar ~/workspaces
-
-      - name: Run Application
-        run: |
-          sudo docker compose -f ~/workspaces/api-docker-compose.yml up -d --build
+#      - name: Create Workspaces Directory
+#        run: |
+#          if [ ! -d ~/workspaces ]; then
+#            mkdir ~/workspaces
+#          fi
+#
+#      - name: Copy Docker-Compose and DockerFile to Workspaces
+#        run: |
+#          cp $GITHUB_WORKSPACE/infra/api-docker-compose.yml ~/workspaces
+#          cp $GITHUB_WORKSPACE/infra/ApiDockerfile ~/workspaces
+#          cp $GITHUB_WORKSPACE/build/libs/github_action.jar ~/workspaces
+#
+#      - name: Run Application
+#        run: |
+#          sudo docker compose -f ~/workspaces/api-docker-compose.yml up -d --build
+      - name: RUN APPLICATION
+        run: sudo $GITHUB_WORKSPACE/script/docker-run.sh
