@@ -44,4 +44,9 @@ public class TestController {
         return "success";
     }
 
+    @GetMapping("/success")
+    public String onlySuccessMessageSendMethod() {
+        return "success";
+    }
+
 }
