@@ -4,7 +4,7 @@ FROM eclipse-temurin:21.0.2_13-jre
 WORKDIR /app
 
 # JAR 파일 복사 (빌드 컨텍스트 내에 있어야 함)
-COPY build/libs/github_action.jar .
+COPY github_action.jar .
 
 # 애플리케이션 실행 명령어
 CMD ["java", "-jar", "github_action.jar", "--spring.profiles.active=local-docker"]
