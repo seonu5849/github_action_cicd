@@ -23,7 +23,7 @@ FROM eclipse-temurin:21-jre-alpine
 WORKDIR /application
 
 # 환경
-ENV PROFILE=local_docker
+ENV PROFILE=local
 
 # builder 단계에서 추출한 파일을 복사
 # dependencies : 의존성 라이브러리
