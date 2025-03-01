@@ -75,7 +75,7 @@ jobs:
               sudo docker stop api-${actual_index} || true && \
               sudo docker rm api-${actual_index} || true && \
               sudo docker run -d --name api-${actual_index} \
-              --network shinemuscat \
+              --network github_action_default \
               --env PROFILE=local-docker \
               -p $((8080 + actual_index)):8080 \
               app_image:latest"
