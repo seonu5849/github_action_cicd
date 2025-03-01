@@ -78,5 +78,5 @@ jobs:
               --network shinemuscat \
               --env PROFILE=local-docker \
               -p $((8080 + actual_index)):8080 \
-              AppImage:latest"
+              app_image:latest"
           done
