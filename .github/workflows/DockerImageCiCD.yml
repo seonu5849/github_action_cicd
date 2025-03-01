@@ -52,14 +52,14 @@ jobs:
       - name: Copy TAR for Application Container
         run: |
           apps=("app-1" "app-2")
-          for app in "${apps[@]}" do
+          for app in "${apps[@]}"; do
             sudo docker cp ./AppImage.tar $app:/home/ubuntu
           done
 
       - name: Load Docker Image From TAR
         run: |
           apps=("app-1" "app-2")
-          for app in "${apps[@]}" do
+          for app in "${apps[@]}"; do
             docker exec $app /bin/bash -c "sudo docker load -i AppImage.tar"
           done
 
@@ -67,7 +67,7 @@ jobs:
       - name: Run Application
         run: |
           apps=("app-1" "app-2")
-          for app in "${!apps[@]}" do
+          for app in "${!apps[@]}"; do
             actual_index=$((index + 1))
             app="app-${actual_index}"
           
