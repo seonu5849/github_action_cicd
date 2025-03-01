@@ -19,14 +19,13 @@ jobs:
       ## 저장소 코드 체크아웃 (필수 초기 단계)
       - uses: actions/checkout@v4  ## 버전 v4의 공식 체크아웃 액션 사용
 
-      ## ubuntu 서버에 java를 설치하기 때문에 필요하지 않다 생각되어 주석
-#      - name: Set up JDK 21
-#        uses: actions/setup-java@v4
-#        with:
-#          java-version: '21'
-#          distribution: 'temurin'
-#        env:
-#          JAVA_HOME: ${{ env.JAVA_HOME_21_X64 }}  ## 환경변수 강제 설정
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+        env:
+          JAVA_HOME: ${{ env.JAVA_HOME_21_X64 }}  ## 환경변수 강제 설정
       
       ## java 버전 확인
       - name: Check Java Version
@@ -38,63 +37,45 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew clean build --exclude-task test
 
+      ## build된 jar를 이미지화
+      - name: Build Docker Image
+        run: sudo docker buildx build -t app_image:latest -f ../infra/ApiDockerfile .
+
+      - name: Save Docker Image To TAR
+        run: sudo docker save -o AppImage.tar app_image:latest
+
   deploy:
     runs-on: self-hosted
     needs: [ build ] ## build가 수행되어야만 deploy가 수행
     steps:
-      ## 1. 그냥 jar로 application 실행 -----------------------------------------
-      ## jar를 사용하기 쉽게 밖으로 복사
-#      - name: Deploy Application
-#        run: |
-#          cp $GITHUB_WORKSPACE/build/libs/github_action.jar /home/ubuntu
-#          cp $GITHUB_WORKSPACE/script/run.sh /home/ubuntu
+      - name: Copy TAR for Application Container
+        run: |
+          apps=("app-1" "app-2")
+          for app in "${apps[@]}" do
+            sudo docker cp ./AppImage.tar $app:/home/ubuntu
+          done
 
-      ## application 실행
-      #      - name: Run Application
-      #        run: sudo sh /home/ubuntu/run.sh
+      - name: Load Docker Image From TAR
+        run: |
+          apps=("app-1" "app-2")
+          for app in "${apps[@]}" do
+            docker exec $app /bin/bash -c "sudo docker load -i AppImage.tar"
+          done
 
-      ## 2. 각 ubuntu 서버로 jar파일을 복사한 후 각 서버에서 jar로 application 실행 ----------
-      ## 도커 컨테이너 끼리 파일 복사하여 이동
-#      - name: Deploy Application
-#        run: |
-#          apps=("app-1" "app-2")
-#          for app in ${apps[@]};
-#          do
-#            echo "컨테이너: $app"
-#            sudo docker cp $GITHUB_WORKSPACE/build/libs/github_action.jar $app:/home/ubuntu
-#            sudo docker cp $GITHUB_WORKSPACE/script/run.sh $app:/home/ubuntu
-#          done
-
-      ## 각 docker container로 보낸 jar를 각 컨테이너에서 실행
-#      - name: Run Application
-#        run: |
-#          apps=("app-1" "app-2")
-#          for app in ${apps[@]};
-#          do
-#            echo "컨테이너: $app"
-#            sudo docker exec $app /bin/bash -c "chmod +x ./run.sh && sudo ./run.sh"
-#          done
-        ## -c 옵션은 Bash쉘에 전달할 명령을 문자열로 지정
-
-#      - name: Current Directory
-#        run: echo $(pwd)
-        # /home/ubuntu/actions-runner/_work/github_action_cicd/github_action_cicd
-        # $GITHUB_WORKSPACE와 동일
-
-#      - name: Create Workspaces Directory
-#        run: |
-#          if [ ! -d ~/workspaces ]; then
-#            mkdir ~/workspaces
-#          fi
-#
-#      - name: Copy Docker-Compose and DockerFile to Workspaces
-#        run: |
-#          cp $GITHUB_WORKSPACE/infra/api-docker-compose.yml ~/workspaces
-#          cp $GITHUB_WORKSPACE/infra/ApiDockerfile ~/workspaces
-#          cp $GITHUB_WORKSPACE/build/libs/github_action.jar ~/workspaces
-#
-#      - name: Run Application
-#        run: |
-#          sudo docker compose -f ~/workspaces/api-docker-compose.yml up -d --build
-      - name: RUN APPLICATION
-        run: sudo sh $GITHUB_WORKSPACE/script/docker-run.sh
+      # "${!apps[@]}"은 배열의 인덱스를 가져옴
+      - name: Run Application
+        run: |
+          apps=("app-1" "app-2")
+          for app in "${!apps[@]}" do
+            actual_index=$((index + 1))
+            app="app-${actual_index}"
+          
+            sudo docker exec $app /bin/bash -c "
+              sudo docker stop api-${actual_index} || true && \
+              sudo rm api-${actual_index} || true && \
+              sudo docker run -d --name api-${actual_index} \
+              --network shinemuscat \
+              --env PROFILE=local-docker \
+              -p $((8080 + actual_index)):8080 \
+              AppImage:latest"
+          done
