@@ -40,7 +40,7 @@ jobs:
 
       ## build된 jar를 이미지화
       - name: Build Docker Image
-        run: sudo docker buildx build -t app_image:latest -f ../infra/ApiDockerfile .
+        run: sudo docker buildx build -t app_image:latest -f Dockerfile .
 
       - name: Save Docker Image To TAR
         run: sudo docker save -o AppImage.tar app_image:latest
@@ -80,26 +80,3 @@ jobs:
               -p $((8080 + actual_index)):8080 \
               AppImage:latest"
           done
-
-#      - name: Current Directory
-#        run: echo $(pwd)
-        # /home/ubuntu/actions-runner/_work/github_action_cicd/github_action_cicd
-        # $GITHUB_WORKSPACE와 동일
-
-#      - name: Create Workspaces Directory
-#        run: |
-#          if [ ! -d ~/workspaces ]; then
-#            mkdir ~/workspaces
-#          fi
-#
-#      - name: Copy Docker-Compose and DockerFile to Workspaces
-#        run: |
-#          cp $GITHUB_WORKSPACE/infra/api-docker-compose.yml ~/workspaces
-#          cp $GITHUB_WORKSPACE/infra/ApiDockerfile ~/workspaces
-#          cp $GITHUB_WORKSPACE/build/libs/github_action.jar ~/workspaces
-#
-#      - name: Run Application
-#        run: |
-#          sudo docker compose -f ~/workspaces/api-docker-compose.yml up -d --build
-      - name: RUN APPLICATION
-        run: sudo sh $GITHUB_WORKSPACE/script/docker-run.sh
