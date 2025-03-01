@@ -7,7 +7,7 @@ ARG JAR_NAME=github_action
 ARG JAR_PATH=build/libs/${JAR_NAME}.jar
 
 # JAR 파일을 작업 디렉토리에 복사하여 Application.jar로 이름을 바꾼다.
-        COPY ${JAR_PATH} application.jar
+COPY ${JAR_PATH} application.jar
 
 # Spring Boot JAR 파일을 여러 레이어로 추출하고 extracted 디렉터리에 저장
 # JAR 파일의 크기를 분리하고 성능을 최적화하며, 배포 효율성을 높이기 위한 레이아웃을 제공합니다.
@@ -29,9 +29,6 @@ COPY --from=builder /builder/extracted/dependencies/ ./
 COPY --from=builder /builder/extracted/spring-boot-loader/ ./
 COPY --from=builder /builder/extracted/snapshot-dependencies/ ./
 COPY --from=builder /builder/extracted/application/ ./
-
-# CDS 교육 실행을 실행하십시오
-RUN java -XX:ArchiveClassesAtExit=application.jsa -Dspring.context.exit=onRefresh -jar application.jar
 
 # Start the application
 ENTRYPOINT ["java", "-jar", "application.jar", "--spring.profiles.active=local-docker"]
