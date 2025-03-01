@@ -1,12 +1,14 @@
-# Build Container
-FROM eclipse-temurin:21-jdk-alpine AS builder
-WORKDIR /build
+# 두 단계로 빌드를 분리함으로써, 각 단계가 독립적으로 최적화됩니다.
+# 런타임 환경은 빌드 도구를 포함하지 않아 더 작은 크기의 이미지를 만들 수 있습니다.
 
-# 이것은 대상 폴더의 빌드 JAR 파일을 가리킨다.
+# 빌드 단계
+FROM eclipse-temurin:21-jdk-alpine AS builder
+WORKDIR /builder
+
 ARG JAR_NAME=github_action
 ARG JAR_PATH=build/libs/${JAR_NAME}.jar
 
-# JAR 파일을 작업 디렉토리에 복사하여 Application.jar로 이름을 바꾼다.
+# shinemuscat-api.jar를 application.jar로 복사한다.
 COPY ${JAR_PATH} application.jar
 
 # Spring Boot JAR 파일을 여러 레이어로 추출하고 extracted 디렉터리에 저장
@@ -16,9 +18,12 @@ COPY ${JAR_PATH} application.jar
 RUN java -Djarmode=tools -jar application.jar extract --layers --destination extracted
 
 
-# Runtime Container
+# 실행 단계
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /application
+
+# 환경
+ENV PROFILE=local_docker
 
 # builder 단계에서 추출한 파일을 복사
 # dependencies : 의존성 라이브러리
@@ -30,5 +35,5 @@ COPY --from=builder /builder/extracted/spring-boot-loader/ ./
 COPY --from=builder /builder/extracted/snapshot-dependencies/ ./
 COPY --from=builder /builder/extracted/application/ ./
 
-# Start the application
-ENTRYPOINT ["java", "-jar", "application.jar", "--spring.profiles.active=local-docker"]
+# 컨테이너가 시작될 때, 아래 명령어로 애플리케이션 자동으로 실행시킴
+ENTRYPOINT ["java", "-jar", "application.jar", "--spring.profiles.active=${PROFILE}"]
