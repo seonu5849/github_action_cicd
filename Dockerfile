@@ -1,7 +1,5 @@
 # Build Container
-FROM eclipse-temurin:21.0.2_13-jre
-
-# 작업 디렉토리 설정
+FROM eclipse-temurin:21-jdk-alpine AS builder
 WORKDIR /build
 
 # 이것은 대상 폴더의 빌드 JAR 파일을 가리킨다.
@@ -19,8 +17,7 @@ RUN java -Djarmode=tools -jar application.jar extract --layers --destination ext
 
 
 # Runtime Container
-FROM eclipse-temurin:21.0.2_13-jre
-
+FROM eclipse-temurin:21-jre-alpine
 WORKDIR /application
 
 # builder 단계에서 추출한 파일을 복사
