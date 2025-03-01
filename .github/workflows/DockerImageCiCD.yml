@@ -71,11 +71,12 @@ jobs:
             actual_index=$((index + 1))
             app="app-${actual_index}"
           
-            echo $app
+            echo 'current pick app : ' $app
           
+            sudo docker stop api-${actual_index} || true
+            sudo docker rm api-${actual_index} || true
+            
             sudo docker exec $app /bin/bash -c "
-              sudo docker stop api-${actual_index} || true && \
-              sudo docker rm api-${actual_index} || true && \
               sudo docker run -d --name api-${actual_index} \
               --network github_action_default \
               --env PROFILE=local-docker \
