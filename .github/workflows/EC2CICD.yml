@@ -38,13 +38,13 @@ jobs:
 
       ## Gradle 빌드 액션을 이용해서 프로젝트 빌드
       - name: Build with Gradle
-        uses: gradle/gradle-build-action@2.6.0
+        uses: gradle/gradle-build-action@v4
         with:
           arguments: build
 
       ## 빌드해서 생긴 JAR 파일을 깃허브 아티팩트로 업로드
       - name: Upload build artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: github-action
           path: build/libs/github-action.jar
