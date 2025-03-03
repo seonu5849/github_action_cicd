@@ -67,7 +67,7 @@ spring:
     driver-class-name: org.postgresql.Driver
     url: jdbc:postgresql://shinemuscat-rds.ciocegijqykc.ap-northeast-2.rds.amazonaws.com:5432/postgres # 'postgresql'은 Docker Compose에서 서비스 이름
     username: postgres
-    password: 1234
+    password: 12345678
 
 server:
   port: 8080
