@@ -63,7 +63,7 @@ jobs:
       # SCP를 사용하여 JAR 파일을 EC2 서버로 복사
       - name: Deploy to EC2
         run: |
-          echo "${{secrets.SSH_PRIVATE_KEY}}" > private_key.pem
-          chmod 600 private_key.pem
-          scp -i private_key.pem -o StrictHostKeyChecking=no ./build/libs/github_action.jar ${{secrets.USER}}@${{secrets.EC2}}:/home/${{secrets.USER}}/github_action.jar
+          echo "${{secrets.SSH_PRIVATE_KEY}}" > shinemuscat.pem
+          chmod 600 shinemuscat.pem
+          scp -i shinemuscat.pem -o StrictHostKeyChecking=no ./build/libs/github_action.jar ${{secrets.USER}}@${{secrets.EC2}}:/home/${{secrets.USER}}/github_action.jar
           rm -f private_key.pem
