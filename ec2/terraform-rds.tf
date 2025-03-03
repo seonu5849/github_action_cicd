@@ -47,7 +47,7 @@ resource "aws_security_group" "rds_security_group" {
 resource "aws_db_subnet_group" "shinemuscat_db_subnet" {
   name        = "shinemuscat-db-subnet-group"
   description = "Subnet group for RDS instance"
-  subnet_ids = ["subnet-03fe278c3568f6df9", "subnet-034905c8f196154e9"]
+  subnet_ids = [aws_subnet.private_subnet.id] # terraform-vpc.tf에서 설정한 private_subnet을 연결
 
   tags = {
     Name = "ShinemuscatDBSubnetGroup"
