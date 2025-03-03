@@ -33,6 +33,7 @@ resource "aws_instance" "shinemuscat-ec2" {
   ami           = "ami-024ea438ab0376a47" # ubuntu
   instance_type = "t2.micro"
   key_name = aws_key_pair.terraform-key-pair.key_name # Key Pair 연결
+  subnet_id = aws_subnet.public_subnet.id # terraform-vpc.tf에서 설정한 public_subnet 연결
 
   vpc_security_group_ids = [aws_security_group.ec2_security_group.id]
 
