@@ -65,5 +65,5 @@ jobs:
         run: |
           echo "${{secrets.SSH_PRIVATE_KEY}}" > private_key.pem
           chmod 600 private_key.pem
-          scp -i private_key.pem -o StrictHostKeyChecking=no ./build/libs/github_action.jar ubuntu@ec2-13-125-37-214.ap-northeast-2.compute.amazonaws.com:/home/ubuntu/github_action.jar
+          scp -i private_key.pem -o StrictHostKeyChecking=no ./build/libs/github_action.jar ${{secrets.USER}}@${{secrets.EC2}}:/home/${{secrets.USER}}/github_action.jar
           rm -f private_key.pem
