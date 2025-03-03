@@ -1,84 +1,84 @@
-## GitHub Actions 대시보드에 표시될 워크플로 이름
-name: Docker CI/CD
-## 실행 시 "Deploy to [대상] by @사용자명" 형식으로 표시
-run-name: Deploy to ${{ inputs.deploy_target }} by @${{ github.actor }}
-
-## 트리거 설정 (이벤트 발생 시 워크플로 실행)
-on:
-  push:
-    branches: [ "main" ]  ## main 브랜치에 push 이벤트 발생 시 실행
-#  pull_request:         ## 주석 해제 시 main 브랜치 PR 이벤트로도 실행
-#    branches: [ "main" ]
-
-jobs:
-  build:
-    ## 셀프호스팅 러너 사용 (GitHub 호스트 대신 사용자 인프라 사용)
-    runs-on: self-hosted
-
-    steps:
-      ## 저장소 코드 체크아웃 (필수 초기 단계)
-      - uses: actions/checkout@v4  ## 버전 v4의 공식 체크아웃 액션 사용
-
-      ## ubuntu 서버에 java를 설치하기 때문에 필요하지 않다 생각되어 주석
-#      - name: Set up JDK 21
-#        uses: actions/setup-java@v4
-#        with:
-#          java-version: '21'
-#          distribution: 'temurin'
-#        env:
-#          JAVA_HOME: ${{ env.JAVA_HOME_21_X64 }}  ## 환경변수 강제 설정
-      
-      ## java 버전 확인
-      - name: Check Java Version
-        run: java -version
-
-      ## gradle의 실행권한 부여와 build 수행
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
-      - name: Build with Gradle
-        run: ./gradlew clean build --exclude-task test
-
-      ## build된 jar를 이미지화
-      - name: Build Docker Image
-        run: sudo docker buildx build -t app_image:latest -f Dockerfile .
-
-      - name: Save Docker Image To TAR
-        run: sudo docker save -o AppImage.tar app_image:latest
-
-  deploy:
-    runs-on: self-hosted
-    needs: [ build ] ## build가 수행되어야만 deploy가 수행
-    steps:
-      - name: Copy TAR for Application Container
-        run: |
-          apps=("app-1" "app-2")
-          for app in "${apps[@]}"; do
-            sudo docker cp ./AppImage.tar $app:/home/ubuntu
-          done
-
-      - name: Load Docker Image From TAR
-        run: |
-          apps=("app-1" "app-2")
-          for app in "${apps[@]}"; do
-            sudo docker exec $app /bin/bash -c "sudo service docker start || true && sudo docker load -i AppImage.tar || true"
-          done
-
-      # "${!apps[@]}"은 배열의 인덱스를 가져옴
-      #              --network github_action_default \
-      - name: Run Application
-        run: |
-          apps=("app-1" "app-2")
-          for app in "${!apps[@]}"; do
-            actual_index=$((index + 1))
-            app="app-${actual_index}"
-          
-            echo 'current pick app : ' $app
-            
-            sudo docker exec $app /bin/bash -c "
-               sudo docker stop api-${actual_index} || true && \
-               sudo docker rm api-${actual_index} || true && \
-              sudo docker run -d --name api-${actual_index} \
-              --env PROFILE=local-docker \
-              -p $((8080 + actual_index)):8080 \
-              app_image:latest"
-          done
+### GitHub Actions 대시보드에 표시될 워크플로 이름
+#name: Docker CI/CD
+### 실행 시 "Deploy to [대상] by @사용자명" 형식으로 표시
+#run-name: Deploy to ${{ inputs.deploy_target }} by @${{ github.actor }}
+#
+### 트리거 설정 (이벤트 발생 시 워크플로 실행)
+#on:
+#  push:
+#    branches: [ "main" ]  ## main 브랜치에 push 이벤트 발생 시 실행
+##  pull_request:         ## 주석 해제 시 main 브랜치 PR 이벤트로도 실행
+##    branches: [ "main" ]
+#
+#jobs:
+#  build:
+#    ## 셀프호스팅 러너 사용 (GitHub 호스트 대신 사용자 인프라 사용)
+#    runs-on: self-hosted
+#
+#    steps:
+#      ## 저장소 코드 체크아웃 (필수 초기 단계)
+#      - uses: actions/checkout@v4  ## 버전 v4의 공식 체크아웃 액션 사용
+#
+#      ## ubuntu 서버에 java를 설치하기 때문에 필요하지 않다 생각되어 주석
+##      - name: Set up JDK 21
+##        uses: actions/setup-java@v4
+##        with:
+##          java-version: '21'
+##          distribution: 'temurin'
+##        env:
+##          JAVA_HOME: ${{ env.JAVA_HOME_21_X64 }}  ## 환경변수 강제 설정
+#
+#      ## java 버전 확인
+#      - name: Check Java Version
+#        run: java -version
+#
+#      ## gradle의 실행권한 부여와 build 수행
+#      - name: Grant execute permission for gradlew
+#        run: chmod +x gradlew
+#      - name: Build with Gradle
+#        run: ./gradlew clean build --exclude-task test
+#
+#      ## build된 jar를 이미지화
+#      - name: Build Docker Image
+#        run: sudo docker buildx build -t app_image:latest -f Dockerfile .
+#
+#      - name: Save Docker Image To TAR
+#        run: sudo docker save -o AppImage.tar app_image:latest
+#
+#  deploy:
+#    runs-on: self-hosted
+#    needs: [ build ] ## build가 수행되어야만 deploy가 수행
+#    steps:
+#      - name: Copy TAR for Application Container
+#        run: |
+#          apps=("app-1" "app-2")
+#          for app in "${apps[@]}"; do
+#            sudo docker cp ./AppImage.tar $app:/home/ubuntu
+#          done
+#
+#      - name: Load Docker Image From TAR
+#        run: |
+#          apps=("app-1" "app-2")
+#          for app in "${apps[@]}"; do
+#            sudo docker exec $app /bin/bash -c "sudo service docker start || true && sudo docker load -i AppImage.tar || true"
+#          done
+#
+#      # "${!apps[@]}"은 배열의 인덱스를 가져옴
+#      #              --network github_action_default \
+#      - name: Run Application
+#        run: |
+#          apps=("app-1" "app-2")
+#          for app in "${!apps[@]}"; do
+#            actual_index=$((index + 1))
+#            app="app-${actual_index}"
+#
+#            echo 'current pick app : ' $app
+#
+#            sudo docker exec $app /bin/bash -c "
+#               sudo docker stop api-${actual_index} || true && \
+#               sudo docker rm api-${actual_index} || true && \
+#              sudo docker run -d --name api-${actual_index} \
+#              --env PROFILE=local-docker \
+#              -p $((8080 + actual_index)):8080 \
+#              app_image:latest"
+#          done
