@@ -38,7 +38,7 @@ jobs:
 
       ## Gradle 빌드 액션을 이용해서 프로젝트 빌드
       - name: Build with Gradle
-        uses: gradle/gradle-build-action@v4
+        uses: gradle/gradle-build-action@v3
         with:
           arguments: build
 
