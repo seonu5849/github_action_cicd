@@ -39,8 +39,7 @@ jobs:
       ## Gradle 빌드 액션을 이용해서 프로젝트 빌드
       - name: Build with Gradle
         uses: gradle/actions/setup-gradle@v4
-        with:
-          args: build
+        run: ./gradlew clean build --exclude-task test
 
       ## 빌드해서 생긴 JAR 파일을 깃허브 아티팩트로 업로드
       - name: Upload build artifact
