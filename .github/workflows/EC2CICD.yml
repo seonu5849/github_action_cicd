@@ -44,8 +44,8 @@ jobs:
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
-          name: github-action
-          path: build/libs/github-action.jar
+          name: github_action
+          path: build/libs/github_action.jar
 
 #  deploy:
 #    runs-on: ubuntu-latest
