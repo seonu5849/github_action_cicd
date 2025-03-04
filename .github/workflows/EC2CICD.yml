@@ -84,7 +84,7 @@ jobs:
           host: ${{ secrets.EC2 }}
           username: ${{ secrets.USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "/build/libs/github_action.jar"
+          source: "build/libs/github_action.jar"
           target: "/home/${{ secrets.USER }}/github_action.jar"
 
       ## EC2에 배포
