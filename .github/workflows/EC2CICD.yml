@@ -106,7 +106,9 @@ jobs:
           port: 22
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            nohup java -jar github_action.jar --spring.profiles.active=aws > app.log &
+            nohup java -jar github_action.jar --spring.profiles.active=aws > app.log 2>&1 &
+            sleep 5
+            echo "Application started"
 
       - name: Remove IP from security group
         if: always()
