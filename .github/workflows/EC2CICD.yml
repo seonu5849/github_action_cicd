@@ -81,11 +81,12 @@ jobs:
       - name: SCP JAR file
         uses: appleboy/scp-action@v0.1.7
         with:
-          host: ${{ secrets.EC2 }}
-          username: ${{ secrets.USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          host: ${{ secrets.EC2 }} # EC2 Public IP
+          username: ${{ secrets.USER }} # EC2 USERNAME
+          key: ${{ secrets.SSH_PRIVATE_KEY }} # EC2 SSH KEY
           source: "build/libs/github_action.jar"
           target: "/home/${{ secrets.USER }}"
+          strip_components: 2
 
       ## EC2에 배포
       # EC2 SSH 키를 private_key.pem 파일로 저장 ( 위치는 GitHub 서버 )
