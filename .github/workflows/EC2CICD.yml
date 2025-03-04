@@ -58,15 +58,37 @@ jobs:
           name: github_action
           path: build/libs/
 
+      ## github runner의 ip를 가져옴
+      - name: Get runner IP
+        id: ip
+        uses: haythem/public-ip@v1.2
+
+      - name: Add Ip to security group
+        run: |
+          aws ec2 authorize-security-group-ingress \
+            --group-id ${{ secrets.AWS_SECURITY_GROUP_ID }} \
+            --protocol tcp \
+            --port 22 \
+            --cidr ${{ steps.ip.outputs.ipv4 }}/32
+
+      - name: SCP JAR file
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2 }}
+          username: ${{ secrets.USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "/build/libs/github_action.jar"
+          target: "/home/${{ secrets.USER }}/github_action.jar"
+
       ## EC2에 배포
       # EC2 SSH 키를 private_key.pem 파일로 저장 ( 위치는 GitHub 서버 )
       # SCP를 사용하여 JAR 파일을 EC2 서버로 복사
-      - name: Deploy to EC2
-        run: |
-          echo "${{secrets.SSH_PRIVATE_KEY}}" > shinemuscat.pem
-          chmod 600 shinemuscat.pem
-          scp -i shinemuscat.pem -o StrictHostKeyChecking=no ./build/libs/github_action.jar ${{secrets.USER}}@${{secrets.EC2}}:/home/${{secrets.USER}}/github_action.jar
-          rm -f private_key.pem
+#      - name: Deploy to EC2
+#        run: |
+#          echo "${{secrets.SSH_PRIVATE_KEY}}" > shinemuscat.pem
+#          chmod 600 shinemuscat.pem
+#          scp -i shinemuscat.pem -o StrictHostKeyChecking=no ./build/libs/github_action.jar ${{secrets.USER}}@${{secrets.EC2}}:/home/${{secrets.USER}}/github_action.jar
+#          rm -f private_key.pem
 
       - name: Start Application
         uses: appleboy/ssh-action@master # github action의 ssh 원격 접속
@@ -77,4 +99,13 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             nohup java -jar github_action.jar --spring.profiles.active=aws > app.log &
+
+      - name: Remove IP from security group
+        if: always()
+        run: |
+          aws ec2 revoke-security-group-ingress \
+            --group-id ${{ secrets.AWS_SECURITY_GROUP_ID }} \
+            --protocol tcp \
+            --port 22 \
+            --cidr ${{ steps.ip.outputs.ipv4 }}/32
 
