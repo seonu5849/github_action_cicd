@@ -75,6 +75,6 @@ jobs:
           username: ${{ secrets.USER }}
           port: 22
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-        script: |
-          nohup java -jar github_action.jar --spring.profiles.active=aws > app.log &
+          script: |
+            nohup java -jar github_action.jar --spring.profiles.active=aws > app.log &
 
