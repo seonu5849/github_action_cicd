@@ -67,3 +67,14 @@ jobs:
           chmod 600 shinemuscat.pem
           scp -i shinemuscat.pem -o StrictHostKeyChecking=no ./build/libs/github_action.jar ${{secrets.USER}}@${{secrets.EC2}}:/home/${{secrets.USER}}/github_action.jar
           rm -f private_key.pem
+
+      - name: Start Application
+        uses: appleboy/ssh-action@master # github action의 ssh 원격 접속
+        with:
+          host: ${{ secrets.EC2 }} # EC2 Public IP
+          username: ${{ secrets.USER }}
+          port: 22
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+        script: |
+          nohup java -jar github_action.jar --spring.profiles.active=aws > app.log &
+
