@@ -38,13 +38,12 @@ resource "aws_instance" "shinemuscat-ec2" {
 
   vpc_security_group_ids = [aws_security_group.ec2_security_group.id]
 
-#   ec2 생성시 docker 설치
+#   ec2 생성시 docker 설치 및 jdk 설치
   user_data = <<-EOF
               #!/bin/bash
               apt update -y && apt install -y docker.io
-              systemctl start docker
-              systemctl enable docker
-              usermod -aG docker $USER
+              sudo apt update
+              sudo apt install openjdk-21-jre-headless -y
               EOF
 
   tags = {
