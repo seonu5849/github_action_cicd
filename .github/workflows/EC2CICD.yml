@@ -70,6 +70,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
+      ## EC2 보안그룹에 github action runner의 ip 등록 
       - name: Add Ip to security group
         run: |
           aws ec2 authorize-security-group-ingress \
@@ -78,6 +79,9 @@ jobs:
             --port 22 \
             --cidr ${{ steps.ip.outputs.ipv4 }}/32
 
+      ## EC2에 배포
+      # EC2 SSH 키를 private_key.pem 파일로 저장 ( 위치는 GitHub 서버 )
+      # SCP를 사용하여 JAR 파일을 EC2 서버로 복사
       - name: SCP JAR file
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -87,16 +91,6 @@ jobs:
           source: "build/libs/github_action.jar"
           target: "/home/${{ secrets.USER }}"
           strip_components: 2
-
-      ## EC2에 배포
-      # EC2 SSH 키를 private_key.pem 파일로 저장 ( 위치는 GitHub 서버 )
-      # SCP를 사용하여 JAR 파일을 EC2 서버로 복사
-#      - name: Deploy to EC2
-#        run: |
-#          echo "${{secrets.SSH_PRIVATE_KEY}}" > shinemuscat.pem
-#          chmod 600 shinemuscat.pem
-#          scp -i shinemuscat.pem -o StrictHostKeyChecking=no ./build/libs/github_action.jar ${{secrets.USER}}@${{secrets.EC2}}:/home/${{secrets.USER}}/github_action.jar
-#          rm -f private_key.pem
 
       - name: Start Application
         uses: appleboy/ssh-action@master # github action의 ssh 원격 접속
@@ -110,6 +104,7 @@ jobs:
             sleep 5
             echo "Application started"
 
+      ## EC2 보안그룹에 github action runner의 ip 삭제
       - name: Remove IP from security group
         if: always()
         run: |
