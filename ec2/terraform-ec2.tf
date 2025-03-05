@@ -7,7 +7,8 @@ data "http" "my_ip" {
 }
 
 variable "instance_names" {
-  default = ["shinemuscat-cicd", "shinemuscat-app-1", "shinemuscat-app-2"]
+#   default = ["shinemuscat-cicd", "shinemuscat-app-1", "shinemuscat-app-2"]
+  default = ["shinemuscat-cicd"]
 }
 
 terraform { # 각 공급자에 대해 소스 속성은 옵션 호스트 이름, 네임 스페이스 및 제공자 유형을 정의
@@ -37,6 +38,15 @@ resource "aws_instance" "shinemuscat-ec2" {
 
   vpc_security_group_ids = [aws_security_group.ec2_security_group.id]
 
+#   ec2 생성시 docker 설치
+  user_data = <<-EOF
+              #!/bin/bash
+              apt update -y && apt install -y docker.io
+              systemctl start docker
+              systemctl enable docker
+              usermod -aG docker $USER
+              EOF
+
   tags = {
     Name = var.instance_names[count.index] # 인스턴스 이름
   }
@@ -62,6 +72,14 @@ resource "aws_security_group" "ec2_security_group" {
   ingress { # 들어오는 트래픽 (인바운드)
     from_port = 22
     to_port = 22
+    protocol = "tcp"
+    cidr_blocks = [format("%s/32", chomp(data.http.my_ip.body))] # 모든 IP로 나가는 트래픽 허용
+    # body는 http 데이터 소스의 응답 본문(body)를 참조하기 위해 쓴 것
+  }
+
+  ingress { # 들어오는 트래픽 (인바운드)
+    from_port = 8080
+    to_port = 8080
     protocol = "tcp"
     cidr_blocks = [format("%s/32", chomp(data.http.my_ip.body))] # 모든 IP로 나가는 트래픽 허용
     # body는 http 데이터 소스의 응답 본문(body)를 참조하기 위해 쓴 것
