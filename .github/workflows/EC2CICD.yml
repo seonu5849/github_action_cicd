@@ -117,12 +117,16 @@ jobs:
             docker build -t app_image:latest -f Dockerfile .
             docker save -o AppImage.tar app_image:latest
             
+            echo "${{secrets.SSH_PRIVATE_KEY}}" > shinemuscat.pem
+            
             apps=(${{ secrets.EC2_INSTANCES }})
             for app in "${apps[@]}"; do
               echo 'current pick instance : ' $app
               scp -i shinemuscat.pem -o StrictHostKeyChecking=no AppImage.tar ${{secrets.USER}}@${{secrets.app}}:/home/${{secrets.USER}}/AppImage.tar
             done
             echo "Success Copy For Service Instances"
+            
+            rm -f private_key.pem
 
       - name: Start Application 1
         uses: appleboy/ssh-action@master # github action의 ssh 원격 접속
