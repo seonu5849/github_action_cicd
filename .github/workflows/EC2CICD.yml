@@ -119,7 +119,7 @@ jobs:
             
             echo "${{secrets.SSH_PRIVATE_KEY}}" > shinemuscat.pem
             
-            apps=(${{ secrets.APP_1 }}, ${{ secrets.APP_2 }})
+            apps=("${{ secrets.APP_1 }}" "${{ secrets.APP_2 }}")
             for app in "${apps[@]}"; do
               echo 'current pick instance : ' $app
               scp -i shinemuscat.pem -o StrictHostKeyChecking=no ./AppImage.tar ${{secrets.USER}}@$app:/home/${{secrets.USER}}/AppImage.tar
