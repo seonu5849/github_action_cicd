@@ -119,14 +119,13 @@ jobs:
             
             echo "${{secrets.SSH_PRIVATE_KEY}}" > shinemuscat.pem
             
-            apps=(${{ secrets.EC2_INSTANCES }})
+            apps=(${{ secrets.APP_1 }}, ${{ secrets.APP_2 }})
             for app in "${apps[@]}"; do
               echo 'current pick instance : ' $app
               scp -i shinemuscat.pem -o StrictHostKeyChecking=no AppImage.tar ${{secrets.USER}}@${{secrets.app}}:/home/${{secrets.USER}}/AppImage.tar
             done
-            echo "Success Copy For Service Instances"
-            
             rm -f private_key.pem
+            echo "Success Copy For Service Instances"
 
       - name: Start Application 1
         uses: appleboy/ssh-action@master # github action의 ssh 원격 접속
