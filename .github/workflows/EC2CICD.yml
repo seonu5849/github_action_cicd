@@ -95,7 +95,7 @@ jobs:
       - name: Send Tar To Service Instances
         uses: appleboy/ssh-action@master # github action의 ssh 원격 접속
         with:
-          host: ${{ secrets.EC2 }} # EC2 Public IP
+          host: ${{ secrets.CICD }} # EC2 Public IP
           username: ${{ secrets.USER }}
           port: 22
           key: ${{ secrets.SSH_PRIVATE_KEY }}
