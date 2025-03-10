@@ -88,7 +88,7 @@ jobs:
           host: ${{ secrets.CICD }} # EC2 Public IP
           username: ${{ secrets.USER }} # EC2 USERNAME
           key: ${{ secrets.SSH_PRIVATE_KEY }} # EC2 SSH KEY
-          source: "build/libs/github_action.jar,Dockerfile"
+          source: "build/libs/github_action.jar"
           target: "/home/${{ secrets.USER }}"
 
       - name: SCP Dockerfile
@@ -97,7 +97,7 @@ jobs:
           host: ${{ secrets.CICD }} # EC2 Public IP
           username: ${{ secrets.USER }} # EC2 USERNAME
           key: ${{ secrets.SSH_PRIVATE_KEY }} # EC2 SSH KEY
-          source: "Dockerfile"
+          source: "./Dockerfile"
           target: "/home/${{ secrets.USER }}"
 #          strip_components: 2
 
