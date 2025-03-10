@@ -122,7 +122,7 @@ jobs:
             apps=(${{ secrets.APP_1 }}, ${{ secrets.APP_2 }})
             for app in "${apps[@]}"; do
               echo 'current pick instance : ' $app
-              scp -i shinemuscat.pem -o StrictHostKeyChecking=no AppImage.tar ${{secrets.USER}}@${{secrets.app}}:/home/${{secrets.USER}}/AppImage.tar
+              scp -i shinemuscat.pem -o StrictHostKeyChecking=no ./AppImage.tar ${{secrets.USER}}@$app:/home/${{secrets.USER}}/AppImage.tar
             done
             rm -f private_key.pem
             echo "Success Copy For Service Instances"
