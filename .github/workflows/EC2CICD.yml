@@ -45,7 +45,16 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: github_action
-          path: build/libs/github_action.jar
+          path: |
+            build/libs/github_action.jar
+            - name: Upload build artifact
+
+      - name: Upload Dockerfile artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Dockerfile
+          path: |
+            ./Dockerfile
 
   deploy:
     runs-on: ubuntu-latest
@@ -57,6 +66,12 @@ jobs:
         with:
           name: github_action
           path: build/libs/
+
+      - name: Download Dockerfile artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: Dockerfile
+          path: .
 
       ## github runner의 ip를 가져옴
       - name: Get runner IP
@@ -88,18 +103,18 @@ jobs:
           host: ${{ secrets.CICD }} # EC2 Public IP
           username: ${{ secrets.USER }} # EC2 USERNAME
           key: ${{ secrets.SSH_PRIVATE_KEY }} # EC2 SSH KEY
-          source: "build/libs/github_action.jar"
+          source: "build/libs/github_action.jar,Dockerfile"
           target: "/home/${{ secrets.USER }}"
 
-      - name: SCP Dockerfile
-        uses: appleboy/scp-action@master
-        with:
-          host: ${{ secrets.CICD }} # EC2 Public IP
-          username: ${{ secrets.USER }} # EC2 USERNAME
-          key: ${{ secrets.SSH_PRIVATE_KEY }} # EC2 SSH KEY
-          source: "$GITHUB_WORKSPACE/Dockerfile"
-          target: "/home/${{ secrets.USER }}"
-#          strip_components: 2
+#      - name: SCP Dockerfile
+#        uses: appleboy/scp-action@master
+#        with:
+#          host: ${{ secrets.CICD }} # EC2 Public IP
+#          username: ${{ secrets.USER }} # EC2 USERNAME
+#          key: ${{ secrets.SSH_PRIVATE_KEY }} # EC2 SSH KEY
+#          source: "$GITHUB_WORKSPACE/Dockerfile"
+#          target: "/home/${{ secrets.USER }}"
+##          strip_components: 2
 
       - name: Send Tar To Service Instances
         uses: appleboy/ssh-action@master # github action의 ssh 원격 접속
