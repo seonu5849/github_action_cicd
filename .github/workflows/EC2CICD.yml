@@ -151,7 +151,7 @@ jobs:
             docker load -i AppImage.tar || true
             docker stop api-1 || true
             docker rm api-1 || true
-            docker run -d --name api-1 --env PROFILE=aws -p 8080:8080 app_image:latest"
+            docker run -d --name api-1 --env PROFILE=aws -p 8080:8080 app_image:latest
 
 #      - name: Start Application
 #        run: |
