@@ -45,7 +45,16 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: github_action
-          path: build/libs/github_action.jar
+          path: |
+            build/libs/github_action.jar
+            - name: Upload build artifact
+
+      - name: Upload Dockerfile artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Dockerfile
+          path: |
+            ./Dockerfile
 
   deploy:
     runs-on: ubuntu-latest
@@ -57,6 +66,12 @@ jobs:
         with:
           name: github_action
           path: build/libs/
+
+      - name: Download Dockerfile artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: Dockerfile
+          path: .
 
       ## github runner의 ip를 가져옴
       - name: Get runner IP
@@ -83,26 +98,79 @@ jobs:
       # EC2 SSH 키를 private_key.pem 파일로 저장 ( 위치는 GitHub 서버 )
       # SCP를 사용하여 JAR 파일을 EC2 서버로 복사
       - name: SCP JAR file
-        uses: appleboy/scp-action@v0.1.7
+        uses: appleboy/scp-action@master
         with:
-          host: ${{ secrets.EC2 }} # EC2 Public IP
+          host: ${{ secrets.CICD }} # EC2 Public IP
           username: ${{ secrets.USER }} # EC2 USERNAME
           key: ${{ secrets.SSH_PRIVATE_KEY }} # EC2 SSH KEY
-          source: "build/libs/github_action.jar"
+          source: "build/libs/github_action.jar,Dockerfile"
           target: "/home/${{ secrets.USER }}"
-          strip_components: 2
 
-      - name: Start Application
+      - name: Send Tar To Service Instances
         uses: appleboy/ssh-action@master # github action의 ssh 원격 접속
         with:
-          host: ${{ secrets.EC2 }} # EC2 Public IP
+          host: ${{ secrets.CICD }} # EC2 Public IP
           username: ${{ secrets.USER }}
           port: 22
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            nohup java -jar github_action.jar --spring.profiles.active=aws > app.log 2>&1 &
-            sleep 5
-            echo "Application started"
+            docker build -t app_image:latest -f Dockerfile .
+            docker save -o AppImage.tar app_image:latest
+            
+            echo "${{secrets.SSH_PRIVATE_KEY}}" > shinemuscat.pem
+            
+            apps=("${{ secrets.APP_1 }}" "${{ secrets.APP_2 }}")
+            for app in "${apps[@]}"; do
+              echo 'current pick instance : ' $app
+              sudo scp -i shinemuscat.pem -o StrictHostKeyChecking=no ./AppImage.tar ${{secrets.USER}}@$app:/home/${{secrets.USER}}/AppImage.tar
+            done
+            rm -f private_key.pem
+            echo "Success Copy For Service Instances"
+
+      - name: Start Application 1
+        uses: appleboy/ssh-action@master # github action의 ssh 원격 접속
+        with:
+          host: ${{ secrets.APP_1 }} # EC2 Public IP
+          username: ${{ secrets.USER }}
+          port: 22
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            docker load -i AppImage.tar || true
+            docker stop api-1 || true
+            docker rm api-1 || true
+            docker run -d --name api-1 --env PROFILE=aws -p 8080:8080 app_image:latest
+
+      - name: Start Application 2
+        uses: appleboy/ssh-action@master # github action의 ssh 원격 접속
+        with:
+          host: ${{ secrets.APP_2 }} # EC2 Public IP
+          username: ${{ secrets.USER }}
+          port: 22
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            docker load -i AppImage.tar || true
+            docker stop api-1 || true
+            docker rm api-1 || true
+            docker run -d --name api-1 --env PROFILE=aws -p 8080:8080 app_image:latest
+
+#      - name: Start Application
+#        run: |
+#          echo "${{secrets.SSH_PRIVATE_KEY}}" > shinemuscat.pem
+#          ssh -i shinemuscat.pem ${{secrets.USER}}@${{secrets.CICD}}
+#
+#          apps=(${{ secrets.EC2_INSTANCES }})
+#            for app in "${!apps[@]}"; do
+#              actual_index=$((index + 1))
+#              echo 'current pick instance : ' $app
+#
+#              docker load -i AppImage.tar || true
+#              docker stop api-${actual_index} || true
+#              docker rm api-${actual_index} || true
+#
+#              docker run -d --name api-${actual_index} --env PROFILE=aws -p $((8080 + actual_index)):8080 app_image:latest"
+#            done
+#
+#          rm -f private_key.pem
 
       ## EC2 보안그룹에 github action runner의 ip 삭제
       - name: Remove IP from security group
