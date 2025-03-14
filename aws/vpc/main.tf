@@ -157,7 +157,7 @@ resource "aws_security_group" "inhouse_sg" {
     protocol    = "tcp"
     cidr_blocks = [
       aws_vpc.vpc.cidr_block,
-      format("%s/32", chomp(data.http.my_ip.body)), # 모든 IP로 나가는 트래픽 허용
+#       format("%s/32", chomp(data.http.my_ip.body)), # 모든 IP로 나가는 트래픽 허용
     ]
   }
 

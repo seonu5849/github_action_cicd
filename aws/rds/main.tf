@@ -1,6 +1,6 @@
 # rds
 resource "aws_db_instance" "shinemuscat-rds" {
-  depends_on = [aws_instance.shinemuscat-ec2] # RDS와 EC2 간 종속성 설정
+#   depends_on = [aws_instance.shinemuscat-ec2] # RDS와 EC2 간 종속성 설정
   identifier = "shinemuscat-rds" # DB 식별자 지정
   allocated_storage   = 20
   db_name             = "postgresql"
@@ -31,7 +31,7 @@ resource "aws_security_group" "rds_security_group" {
     to_port = 5432
     protocol = "tcp"
 #     cidr_blocks = [format("%s/32", aws_instance.shinemuscat-ec2.private_ip)] # 단일 EC2 IP 허용
-    cidr_blocks = formatlist("%s/32", aws_instance.shinemuscat-ec2[*].private_ip) # 다중 EC2 IP 허용, format -> formatlist, [*] 추가
+#     cidr_blocks = formatlist("%s/32", aws_instance.shinemuscat-ec2[*].private_ip) # 다중 EC2 IP 허용, format -> formatlist, [*] 추가
   }
 
   egress { #나가는 트래픽 (아웃바운드)

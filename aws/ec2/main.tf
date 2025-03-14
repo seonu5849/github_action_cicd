@@ -42,6 +42,7 @@ resource "aws_instance" "shinemuscat-ec2" {
   user_data = <<-EOF
               #!/bin/bash
               apt update -y && apt install -y docker.io
+              sudo chmod 666 /var/run/docker.sock
               sudo apt update
               sudo apt install openjdk-21-jre-headless -y
               EOF
