@@ -37,5 +37,6 @@ out/
 .vscode/
 
 ### AWS EC2 ###
-/ec2/**
-/ec2/
+/aws/
+/aws/.terraform/
+!/aws/*.tf
