@@ -34,6 +34,7 @@ module "rds" {
   source = "./rds"
   common = local.common
   vpc_id = module.vpc.id
+  vpc_database_subnets = module.vpc.database_subnets
 
   depends_on = [module.ec2]
 }
