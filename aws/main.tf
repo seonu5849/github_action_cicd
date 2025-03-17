@@ -24,15 +24,21 @@ provider "aws" {            # 공급자 리소스를 관리, "aws"로 설정
 module "ec2" {
   source = "./ec2"
   common = local.common
+  vpc_id = module.vpc.id
+  vpc_subnet_id = module.vpc.public_subnets[0].id
+
+  depends_on = [module.vpc]
 }
 
-# module "rds" {
-#   source = "./rds"
-#
-#   depends_on = [module.ec2]
-# }
-#
-# module "vpc" {
-#   source = "./vpc"
-#
-# }
+module "rds" {
+  source = "./rds"
+  common = local.common
+  vpc_id = module.vpc.id
+
+  depends_on = [module.ec2]
+}
+
+module "vpc" {
+  source = "./vpc"
+  common = local.common
+}

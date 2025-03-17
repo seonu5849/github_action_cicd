@@ -2,7 +2,7 @@
 module "ec2_security_group" {
   source = "./security_group"
   common = var.common
-#   vpc_id = var.vpc_id
+  vpc_id = var.vpc_id
 }
 
 module "cicd" {
@@ -11,7 +11,7 @@ module "cicd" {
   common = var.common
   ec2_option = local.ec2_option
   security_group_id = module.ec2_security_group.id
-  user_data = local.ec2_init_setting.user_data
+  vpc_subnet_id = var.vpc_subnet_id
   counts = 1
 }
 
@@ -21,6 +21,6 @@ module "app" {
   common = var.common
   ec2_option = local.ec2_option
   security_group_id = module.ec2_security_group.id
-  user_data = local.ec2_init_setting.user_data
+  vpc_subnet_id = var.vpc_subnet_id
   counts = 2
 }
