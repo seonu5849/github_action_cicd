@@ -1,4 +1,4 @@
 
 output "rds_postgres" {
-  value = aws_db_instance.shinemuscat-rds
+  value = aws_rds_cluster.aurora_cluster_postgres
 }

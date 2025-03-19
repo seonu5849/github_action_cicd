@@ -30,16 +30,21 @@ module "ec2" {
   depends_on = [module.vpc]
 }
 
-module "rds" {
-  source = "./rds"
-  common = local.common
-  vpc_id = module.vpc.id
-  vpc_database_subnets = module.vpc.database_subnets
-
-  depends_on = [module.ec2]
-}
+# module "rds" {
+#   source = "./rds"
+#   common = local.common
+#   vpc_id = module.vpc.id
+#   vpc_database_subnets = module.vpc.database_subnets
+#
+#   depends_on = [module.ec2]
+# }
 
 module "vpc" {
   source = "./vpc"
+  common = local.common
+}
+
+module "ecr" {
+  source = "./ecr"
   common = local.common
 }

@@ -13,22 +13,27 @@ module "ec2_security_group" {
   vpc_id = var.vpc_id
 }
 
-module "cicd" {
-  source = "./instance"
-  name = "cicd"
+module "ubuntu_launch_template" {
+  source = "./launch_template"
   common = var.common
   ec2_option = local.ec2_option
   security_group_id = module.ec2_security_group.id
-  vpc_subnet_id = var.vpc_subnet_id
-  counts = 1
 }
 
-module "app" {
-  source = "./instance"
-  name = "app"
-  common = var.common
-  ec2_option = local.ec2_option
-  security_group_id = module.ec2_security_group.id
-  vpc_subnet_id = var.vpc_subnet_id
-  counts = 2
-}
+# module "cicd" {
+#   source = "./instance"
+#   name = "cicd"
+#   common = var.common
+#   launch_template_id = module.ubuntu_launch_template.id
+#   vpc_subnet_id = var.vpc_subnet_id
+#   counts = 1
+# }
+#
+# module "app" {
+#   source = "./instance"
+#   name = "app"
+#   common = var.common
+#   launch_template_id = module.ubuntu_launch_template.id
+#   vpc_subnet_id = var.vpc_subnet_id
+#   counts = 2
+# }
