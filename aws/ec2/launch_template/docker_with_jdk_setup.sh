@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# docker install
+# docker setup
 for pkg in docker.io docker-doc docker-compose docker-compose-v2 podman-docker containerd runc; do sudo apt-get remove $pkg; done
 sudo apt install curl -y
 # Add Docker's official GPG key:
@@ -22,6 +22,14 @@ sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin 
 sudo chmod 666 /var/run/docker.sock
 sudo apt update
 
-# jdk install
+# jdk setup
 sudo apt install openjdk-21-jre-headless -y
+sudo apt update
 
+# aws setup
+sudo snap install aws-cli --classic
+sudo apt update
+
+# amazon-ecr-credential-helper setup (ecr 인증정보 helper)
+sudo apt install amazon-ecr-credential-helper
+sudo apt update
