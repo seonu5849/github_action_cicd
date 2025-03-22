@@ -6,7 +6,7 @@ run-name: Deploy to ${{ inputs.deploy_target }} by @${{ github.actor }}
 ## 트리거 설정 (이벤트 발생 시 워크플로 실행)
 on:
   push:
-    branches: [ "main" ]  ## main 브랜치에 push 이벤트 발생 시 실행
+    branches: [ "main", "feature/terraform" ]  ## main 브랜치에 push 이벤트 발생 시 실행
 #  pull_request:         ## 주석 해제 시 main 브랜치 PR 이벤트로도 실행
 #    branches: [ "main" ]
 
@@ -82,7 +82,7 @@ jobs:
           host: ${{ secrets.CICD }} # EC2 Public IP
           username: ${{ secrets.USER }} # EC2 USERNAME
           key: ${{ secrets.SSH_PRIVATE_KEY }} # EC2 SSH KEY
-          source: "build/libs/github_action.jar,./Dockerfile"
+          source: "./Dockerfile,build/libs/github_action.jar"
           target: "/home/${{ secrets.USER }}"
 
       - name: Push to ECR
