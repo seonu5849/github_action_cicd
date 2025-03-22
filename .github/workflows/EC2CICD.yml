@@ -99,12 +99,13 @@ jobs:
           port: 22
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
+            docker stop api-1 || true
+            docker rm api-1 || true
+            
             docker image prune -a -f
             
             aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin ${{ secrets.ECR }}
             docker pull ${{ secrets.ECR }}:shinemuscat-api
-            docker stop api-1 || true
-            docker rm api-1 || true
             docker run -d --name api-1 --env PROFILE=aws -p 8080:8080 ${{ secrets.ECR }}:shinemuscat-api
 
 #      - name: Pull to ECR and Start Application
