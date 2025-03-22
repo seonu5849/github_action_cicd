@@ -80,6 +80,8 @@ jobs:
           port: 22
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
+            docker image prune -a -f
+            
             docker buildx build -t shinemuscat-api:latest -f Dockerfile .
             
             # ecr 로그인
@@ -91,11 +93,13 @@ jobs:
       - name: Pull to ECR and Start Application
         uses: appleboy/ssh-action@master # github action의 ssh 원격 접속
         with:
-          host: "${{ secrets.APP_1 }},${{ secrets.APP_2 }}"
+          host: "${{ secrets.APP_1 }}"
           username: ${{ secrets.USER }}
           port: 22
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
+            docker image prune -a -f
+            
             aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin ${{ secrets.ECR }}
             docker pull ${{ secrets.ECR }}:shinemuscat-api
             docker stop api-1 || true
