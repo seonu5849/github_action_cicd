@@ -66,19 +66,26 @@ jobs:
       - name: SCP JAR file
         uses: appleboy/scp-action@master
         with:
-          host: ${{ secrets.CICD }} # EC2 Public IP
+          host: ${{ secrets.BASTION_HOST }} # EC2 Public IP
           username: ${{ secrets.USER }} # EC2 USERNAME
           key: ${{ secrets.SSH_PRIVATE_KEY }} # EC2 SSH KEY
+          proxy_host: ${{secrets.CICD}}
+          proxy_username: ${{ secrets.USER }}
+          proxy_key: ${{ secrets.SSH_PRIVATE_KEY }} # EC2 SSH KEY
           source: "./Dockerfile,build/libs/github_action.jar"
           target: "/home/${{ secrets.USER }}"
 
       - name: Push to ECR
         uses: appleboy/ssh-action@master # github action의 ssh 원격 접속
         with:
-          host: ${{ secrets.CICD }} # EC2 Public IP
+          host: ${{ secrets.BASTION_HOST }} # EC2 Public IP
           username: ${{ secrets.USER }}
           port: 22
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          key: ${{ secrets.CICD }}
+          proxy_host: ${{ secrets.PROXY_HOST }}
+          proxy_username: ${{ secrets.USER }}
+          proxy_key: ${{ secrets.SSH_PRIVATE_KEY }}
+          proxy_port: 22
           script: |
             docker image prune -a -f
             
@@ -94,10 +101,14 @@ jobs:
       - name: Pull to ECR and Start Application
         uses: appleboy/ssh-action@master # github action의 ssh 원격 접속
         with:
-          host: "${{ secrets.APP_1 }}"
+          host: ${{ secrets.BASTION_HOST }} # EC2 Public IP
           username: ${{ secrets.USER }}
           port: 22
           key: ${{ secrets.SSH_PRIVATE_KEY }}
+          proxy_host: "${{ secrets.APP_1 }}"
+          proxy_username: ${{ secrets.USER }}
+          proxy_key: ${{ secrets.SSH_PRIVATE_KEY }}
+          proxy_port: 22
           script: |
             docker stop api-1 || true
             docker rm api-1 || true
@@ -107,20 +118,3 @@ jobs:
             aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin ${{ secrets.ECR }}
             docker pull ${{ secrets.ECR }}:shinemuscat-api
             docker run -d --name api-1 --env PROFILE=aws -p 8080:8080 ${{ secrets.ECR }}:shinemuscat-api
-
-#      - name: Pull to ECR and Start Application
-#        run: |
-#          apps=("${{ secrets.APP_1 }}" "${{ secrets.APP_2 }}")
-#          for app in "${apps[@]}"; do
-#            echo "${{secrets.SSH_PRIVATE_KEY}}" > shinemuscat.pem
-#            chmod 400 shinemuscat.pem
-#
-#            ssh -o StrictHostKeyChecking=no -i shinemuscat.pem ${{ secrets.USER }}@$app "
-#              aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin ${{ secrets.ECR }} &&
-#              docker pull ${{ secrets.ECR }}:shinemuscat-api &&
-#              docker stop api-1 || true &&
-#              docker rm api-1 || true &&
-#              docker run -d --name api-1 --env PROFILE=aws -p 8080:8080 shinemuscat-api:latest
-#            "
-#          done
-#          rm -f private_key.pem
