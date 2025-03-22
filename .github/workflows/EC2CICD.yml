@@ -73,27 +73,6 @@ jobs:
           name: Dockerfile
           path: .
 
-      ## github runner의 ip를 가져옴
-      - name: Get runner IP
-        id: ip
-        uses: haythem/public-ip@v1.2
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
-
-      ## EC2 보안그룹에 github action runner의 ip 등록 
-      - name: Add Ip to security group
-        run: |
-          aws ec2 authorize-security-group-ingress \
-            --group-id ${{ secrets.AWS_SECURITY_GROUP_ID }} \
-            --protocol tcp \
-            --port 22 \
-            --cidr ${{ steps.ip.outputs.ipv4 }}/32
-
       ## EC2에 배포
       # EC2 SSH 키를 private_key.pem 파일로 저장 ( 위치는 GitHub 서버 )
       # SCP를 사용하여 JAR 파일을 EC2 서버로 복사
@@ -106,7 +85,7 @@ jobs:
           source: "build/libs/github_action.jar,Dockerfile"
           target: "/home/${{ secrets.USER }}"
 
-      - name: Send Tar To Service Instances
+      - name: Push to ECR
         uses: appleboy/ssh-action@master # github action의 ssh 원격 접속
         with:
           host: ${{ secrets.CICD }} # EC2 Public IP
@@ -114,71 +93,22 @@ jobs:
           port: 22
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            docker build -t app_image:latest -f Dockerfile .
-            docker save -o AppImage.tar app_image:latest
+            docker buildx build -t shinemuscat-api:latest -f Dockerfile .
             
+            docker tag shinemuscat-api:latest ${{ secrets.ECR }}:shinemuscat-api
+            docker push ${{ secrets.ECR }}:shinemuscat-api
+
+      - name: Pull to ECR and Start Application
+        run: |
+          apps=("${{ secrets.APP_1 }}" "${{ secrets.APP_2 }}")
+          for app in "${apps[@]}"; do
             echo "${{secrets.SSH_PRIVATE_KEY}}" > shinemuscat.pem
             
-            apps=("${{ secrets.APP_1 }}" "${{ secrets.APP_2 }}")
-            for app in "${apps[@]}"; do
-              echo 'current pick instance : ' $app
-              sudo scp -i shinemuscat.pem -o StrictHostKeyChecking=no ./AppImage.tar ${{secrets.USER}}@$app:/home/${{secrets.USER}}/AppImage.tar
-            done
-            rm -f private_key.pem
-            echo "Success Copy For Service Instances"
-
-      - name: Start Application 1
-        uses: appleboy/ssh-action@master # github action의 ssh 원격 접속
-        with:
-          host: ${{ secrets.APP_1 }} # EC2 Public IP
-          username: ${{ secrets.USER }}
-          port: 22
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            docker load -i AppImage.tar || true
-            docker stop api-1 || true
-            docker rm api-1 || true
-            docker run -d --name api-1 --env PROFILE=aws -p 8080:8080 app_image:latest
-
-      - name: Start Application 2
-        uses: appleboy/ssh-action@master # github action의 ssh 원격 접속
-        with:
-          host: ${{ secrets.APP_2 }} # EC2 Public IP
-          username: ${{ secrets.USER }}
-          port: 22
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            docker load -i AppImage.tar || true
-            docker stop api-1 || true
-            docker rm api-1 || true
-            docker run -d --name api-1 --env PROFILE=aws -p 8080:8080 app_image:latest
-
-#      - name: Start Application
-#        run: |
-#          echo "${{secrets.SSH_PRIVATE_KEY}}" > shinemuscat.pem
-#          ssh -i shinemuscat.pem ${{secrets.USER}}@${{secrets.CICD}}
-#
-#          apps=(${{ secrets.EC2_INSTANCES }})
-#            for app in "${!apps[@]}"; do
-#              actual_index=$((index + 1))
-#              echo 'current pick instance : ' $app
-#
-#              docker load -i AppImage.tar || true
-#              docker stop api-${actual_index} || true
-#              docker rm api-${actual_index} || true
-#
-#              docker run -d --name api-${actual_index} --env PROFILE=aws -p $((8080 + actual_index)):8080 app_image:latest"
-#            done
-#
-#          rm -f private_key.pem
-
-      ## EC2 보안그룹에 github action runner의 ip 삭제
-      - name: Remove IP from security group
-        if: always()
-        run: |
-          aws ec2 revoke-security-group-ingress \
-            --group-id ${{ secrets.AWS_SECURITY_GROUP_ID }} \
-            --protocol tcp \
-            --port 22 \
-            --cidr ${{ steps.ip.outputs.ipv4 }}/32
-
+            ssh -o StrictHostKeyChecking=no -i shinemuscat.pem ${{ secrets.USER }}@$app "
+              docker pull ${{ secrets.ECR }}:shinemuscat-api && 
+              docker stop api-1 || true && 
+              docker rm api-1 || true && 
+              docker run -d --name api-1 --env PROFILE=aws -p 8080:8080 shinemuscat-api:latest
+            "
+          done
+          rm -f private_key.pem
