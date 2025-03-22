@@ -40,5 +40,6 @@ out/
 /aws/.terraform.lock.hcl
 /aws/terraform.tfstate
 /aws/terraform.tfstate.backup
+/aws/.terraform.tfstate.lock.info
 /aws/.terraform/
 /secret/

@@ -35,5 +35,5 @@ module "app" {
   common = var.common
   launch_template_id = module.ubuntu_launch_template.id
   vpc_subnet_id = var.vpc_private_subnet_id
-  counts = 1
+  counts = 2
 }
