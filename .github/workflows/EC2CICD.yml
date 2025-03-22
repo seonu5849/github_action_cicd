@@ -80,7 +80,7 @@ jobs:
           port: 22
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            docker image prune -a
+            docker image prune -a -f
             
             docker buildx build -t shinemuscat-api:latest -f Dockerfile .
             
@@ -98,7 +98,7 @@ jobs:
           port: 22
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            docker image prune -a
+            docker image prune -a -f
             
             aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin ${{ secrets.ECR }}
             docker pull ${{ secrets.ECR }}:shinemuscat-api
