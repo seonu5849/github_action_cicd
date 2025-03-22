@@ -6,7 +6,7 @@ FROM eclipse-temurin:21-jdk-alpine AS builder
 WORKDIR /builder
 
 ARG JAR_NAME=github_action
-ARG JAR_PATH=build/libs/${JAR_NAME}.jar
+ARG JAR_PATH=${JAR_NAME}.jar
 
 # shinemuscat-api.jar를 application.jar로 복사한다.
 COPY ${JAR_PATH} application.jar

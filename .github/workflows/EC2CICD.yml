@@ -47,14 +47,14 @@ jobs:
           name: github_action
           path: |
             build/libs/github_action.jar
-            - name: Upload build artifact
+            Dockerfile
 
-      - name: Upload Dockerfile artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: Dockerfile
-          path: |
-            ./Dockerfile
+#      - name: Upload Dockerfile artifact
+#        uses: actions/upload-artifact@v4
+#        with:
+#          name: Dockerfile
+#          path: |
+#            ./Dockerfile
 
   deploy:
     runs-on: ubuntu-latest
@@ -64,14 +64,14 @@ jobs:
       - name: Download build artifact
         uses: actions/download-artifact@v4
         with:
-          name: github_action.jar
-          path: build/libs/
-
-      - name: Download Dockerfile artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: Dockerfile
+          name: github_action
           path: .
+
+#      - name: Download Dockerfile artifact
+#        uses: actions/download-artifact@v4
+#        with:
+#          name: Dockerfile
+#          path: .
 
       ## EC2에 배포
       # EC2 SSH 키를 private_key.pem 파일로 저장 ( 위치는 GitHub 서버 )
