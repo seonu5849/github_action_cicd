@@ -1,3 +1,7 @@
+# Github action으로 EC2 배포
+
+## build
+```
 ## GitHub Actions 대시보드에 표시될 워크플로 이름
 name: EC2 CI/CD
 ## 실행 시 "Deploy to [대상] by @사용자명" 형식으로 표시
@@ -45,70 +49,35 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: github_action
-          path: |
-            build/libs/github_action.jar
-            - name: Upload build artifact
+          path: build/libs/github_action.jar
+```
+- EC2에 올릴 jar를 **actions/upload-artifact@v4**을 통해 아티펙트에 업로드
 
-      - name: Upload Dockerfile artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: Dockerfile
-          path: |
-            ./Dockerfile
-
-  deploy:
-    runs-on: ubuntu-latest
-    needs: [ build ] ## build가 수행되어야만 deploy가 수행
-    steps:
+## deploy
+- 아티팩트에서 JAR를 다운로드 한다.
+  ```
       ## 빌드작업한 JAR파일을 아티펙트에서 다운로드
       - name: Download build artifact
         uses: actions/download-artifact@v4
         with:
           name: github_action
           path: build/libs/
-
-      - name: Download Dockerfile artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: Dockerfile
-          path: .
-
+    ```
+- 그 후 EC2로 배포
+    ```
       ## EC2에 배포
       # EC2 SSH 키를 private_key.pem 파일로 저장 ( 위치는 GitHub 서버 )
       # SCP를 사용하여 JAR 파일을 EC2 서버로 복사
-      - name: SCP JAR file
-        uses: appleboy/scp-action@master
-        with:
-          host: ${{ secrets.CICD }} # EC2 Public IP
-          username: ${{ secrets.USER }} # EC2 USERNAME
-          key: ${{ secrets.SSH_PRIVATE_KEY }} # EC2 SSH KEY
-          source: "build/libs/github_action.jar,Dockerfile"
-          target: "/home/${{ secrets.USER }}"
-
-      - name: Push to ECR
-        uses: appleboy/ssh-action@master # github action의 ssh 원격 접속
-        with:
-          host: ${{ secrets.CICD }} # EC2 Public IP
-          username: ${{ secrets.USER }}
-          port: 22
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            docker buildx build -t shinemuscat-api:latest -f Dockerfile .
-            
-            docker tag shinemuscat-api:latest ${{ secrets.ECR }}:shinemuscat-api
-            docker push ${{ secrets.ECR }}:shinemuscat-api
-
-      - name: Pull to ECR and Start Application
+      - name: Deploy to EC2
         run: |
-          apps=("${{ secrets.APP_1 }}" "${{ secrets.APP_2 }}")
-          for app in "${apps[@]}"; do
-            echo "${{secrets.SSH_PRIVATE_KEY}}" > shinemuscat.pem
-            
-            ssh -o StrictHostKeyChecking=no -i shinemuscat.pem ${{ secrets.USER }}@$app "
-              docker pull ${{ secrets.ECR }}:shinemuscat-api && 
-              docker stop api-1 || true && 
-              docker rm api-1 || true && 
-              docker run -d --name api-1 --env PROFILE=aws -p 8080:8080 shinemuscat-api:latest
-            "
-          done
+          echo "${{secrets.SSH_PRIVATE_KEY}}" > shinemuscat.pem
+          chmod 600 shinemuscat.pem
+          scp -i shinemuscat.pem -o StrictHostKeyChecking=no ./build/libs/github_action.jar ${{secrets.USER}}@${{secrets.EC2}}:/home/${{secrets.USER}}/github_action.jar
           rm -f private_key.pem
+    ```
+
+### 만날 수 있는 메시지
+```
+Warning: Permanently added '***' (ED25519) to the list of known hosts.
+```
+- 이 메시지는 오류가 아니라 정상적인 SSH 동작입니다. SSH 클라이언트가 처음으로 특정 서버에 연결할 때 서버의 호스트 키를 로컬 시스템의 known_hosts 파일에 추가했음을 알리는 경고 메시지입니다.

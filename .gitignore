@@ -37,5 +37,8 @@ out/
 .vscode/
 
 ### AWS EC2 ###
-/ec2/**
-/ec2/
+/aws/.terraform.lock.hcl
+/aws/terraform.tfstate
+/aws/terraform.tfstate.backup
+/aws/.terraform/
+/secret/

@@ -5,7 +5,7 @@
 #x-application-server: &application-container-settings
 #  build:
 #    context: .
-#    dockerfile: ApiDockerfile
+#    dockerfile: Dockerfile
 #
 #services:
 #  app-1:
