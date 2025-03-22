@@ -64,7 +64,7 @@ jobs:
       - name: Download build artifact
         uses: actions/download-artifact@v4
         with:
-          name: github_action
+          name: github_action.jar
           path: build/libs/
 
       - name: Download Dockerfile artifact
