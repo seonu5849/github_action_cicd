@@ -82,6 +82,9 @@ jobs:
           script: |
             docker buildx build -t shinemuscat-api:latest -f Dockerfile .
             
+            # ecr 로그인
+            aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin ${{ secrets.ECR }}
+            
             docker tag shinemuscat-api:latest ${{ secrets.ECR }}:shinemuscat-api
             docker push ${{ secrets.ECR }}:shinemuscat-api
 
@@ -92,6 +95,7 @@ jobs:
             echo "${{secrets.SSH_PRIVATE_KEY}}" > shinemuscat.pem
             
             ssh -o StrictHostKeyChecking=no -i shinemuscat.pem ${{ secrets.USER }}@$app "
+              aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin ${{ secrets.ECR }} &&
               docker pull ${{ secrets.ECR }}:shinemuscat-api && 
               docker stop api-1 || true && 
               docker rm api-1 || true && 
