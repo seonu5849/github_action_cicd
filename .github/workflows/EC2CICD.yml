@@ -6,7 +6,7 @@ run-name: Deploy to ${{ inputs.deploy_target }} by @${{ github.actor }}
 ## 트리거 설정 (이벤트 발생 시 워크플로 실행)
 on:
   push:
-    branches: [ "main" ]  ## main 브랜치에 push 이벤트 발생 시 실행
+    branches: [ "main", "feature/terraform" ]  ## main 브랜치에 push 이벤트 발생 시 실행
 #  pull_request:         ## 주석 해제 시 main 브랜치 PR 이벤트로도 실행
 #    branches: [ "main" ]
 
@@ -47,14 +47,7 @@ jobs:
           name: github_action
           path: |
             build/libs/github_action.jar
-            - name: Upload build artifact
-
-      - name: Upload Dockerfile artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: Dockerfile
-          path: |
-            ./Dockerfile
+            Dockerfile
 
   deploy:
     runs-on: ubuntu-latest
@@ -65,12 +58,6 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: github_action
-          path: build/libs/
-
-      - name: Download Dockerfile artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: Dockerfile
           path: .
 
       ## EC2에 배포
@@ -82,7 +69,7 @@ jobs:
           host: ${{ secrets.CICD }} # EC2 Public IP
           username: ${{ secrets.USER }} # EC2 USERNAME
           key: ${{ secrets.SSH_PRIVATE_KEY }} # EC2 SSH KEY
-          source: "build/libs/github_action.jar,./Dockerfile"
+          source: "./Dockerfile,build/libs/github_action.jar"
           target: "/home/${{ secrets.USER }}"
 
       - name: Push to ECR
@@ -93,22 +80,47 @@ jobs:
           port: 22
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            docker buildx build -t shinemuscat-api:latest -f Dockerfile .
+            docker image prune -a -f
             
-            docker tag shinemuscat-api:latest ${{ secrets.ECR }}:shinemuscat-api
-            docker push ${{ secrets.ECR }}:shinemuscat-api
+            # 기존 이미지를 삭제 (shinemuscat:latest가 존재하는 경우)
+            docker rmi -f ${{ secrets.ECR }}:shinemuscat-api
+            
+            # ecr 로그인
+            aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin ${{ secrets.ECR }}
+            
+            # Docker 이미지 빌드하고 바로 태그 추가
+            docker buildx build -t ${{ secrets.ECR }}:shinemuscat-api -f Dockerfile . --push
 
       - name: Pull to ECR and Start Application
-        run: |
-          apps=("${{ secrets.APP_1 }}" "${{ secrets.APP_2 }}")
-          for app in "${apps[@]}"; do
-            echo "${{secrets.SSH_PRIVATE_KEY}}" > shinemuscat.pem
+        uses: appleboy/ssh-action@master # github action의 ssh 원격 접속
+        with:
+          host: "${{ secrets.APP_1 }}"
+          username: ${{ secrets.USER }}
+          port: 22
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            docker stop api-1 || true
+            docker rm api-1 || true
             
-            ssh -o StrictHostKeyChecking=no -i shinemuscat.pem ${{ secrets.USER }}@$app "
-              docker pull ${{ secrets.ECR }}:shinemuscat-api && 
-              docker stop api-1 || true && 
-              docker rm api-1 || true && 
-              docker run -d --name api-1 --env PROFILE=aws -p 8080:8080 shinemuscat-api:latest
-            "
-          done
-          rm -f private_key.pem
+            docker image prune -a -f
+            
+            aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin ${{ secrets.ECR }}
+            docker pull ${{ secrets.ECR }}:shinemuscat-api
+            docker run -d --name api-1 --env PROFILE=aws -p 8080:8080 ${{ secrets.ECR }}:shinemuscat-api
+
+#      - name: Pull to ECR and Start Application
+#        run: |
+#          apps=("${{ secrets.APP_1 }}" "${{ secrets.APP_2 }}")
+#          for app in "${apps[@]}"; do
+#            echo "${{secrets.SSH_PRIVATE_KEY}}" > shinemuscat.pem
+#            chmod 400 shinemuscat.pem
+#
+#            ssh -o StrictHostKeyChecking=no -i shinemuscat.pem ${{ secrets.USER }}@$app "
+#              aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin ${{ secrets.ECR }} &&
+#              docker pull ${{ secrets.ECR }}:shinemuscat-api &&
+#              docker stop api-1 || true &&
+#              docker rm api-1 || true &&
+#              docker run -d --name api-1 --env PROFILE=aws -p 8080:8080 shinemuscat-api:latest
+#            "
+#          done
+#          rm -f private_key.pem
