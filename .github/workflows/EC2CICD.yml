@@ -82,13 +82,17 @@ jobs:
           script: |
             docker image prune -a -f
             
-            docker buildx build -t shinemuscat-api:latest -f Dockerfile .
+            # 기존 이미지를 삭제 (shinemuscat:latest가 존재하는 경우)
+            docker rmi -f ${{ secrets.ECR }}:shinemuscat-api
             
             # ecr 로그인
             aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin ${{ secrets.ECR }}
             
-            docker tag shinemuscat-api:latest ${{ secrets.ECR }}:shinemuscat-api
-            docker push ${{ secrets.ECR }}:shinemuscat-api
+#            docker tag shinemuscat-api:latest ${{ secrets.ECR }}:shinemuscat-api
+#            docker push ${{ secrets.ECR }}:shinemuscat-api
+
+            # Docker 이미지 빌드하고 바로 태그 추가
+            docker buildx build -t ${{ secrets.ECR }}:shinemuscat-api -f Dockerfile . --push
 
       - name: Pull to ECR and Start Application
         uses: appleboy/ssh-action@master # github action의 ssh 원격 접속
