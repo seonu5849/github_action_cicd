@@ -12,7 +12,7 @@ on:
 
 jobs:
   build:
-    ## 셀프호스팅 러너 사용 (GitHub 호스트 대신 사용자 인프라 사용)
+    ## 깃헙 호스티드
     runs-on: ubuntu-latest
 
     steps:
