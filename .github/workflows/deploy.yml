@@ -1,5 +1,5 @@
 ## GitHub Actions 대시보드에 표시될 워크플로 이름
-name: EC2 CI/CD
+name: EC2 Deploy
 ## 실행 시 "Deploy to [대상] by @사용자명" 형식으로 표시
 run-name: Deploy to ${{ inputs.deploy_target }} by @${{ github.actor }}
 
@@ -11,8 +11,8 @@ on:
 #    branches: [ "main" ]
 
 env:
-  BASTION: ec2-3-34-132-193.ap-northeast-2.compute.amazonaws.com
-  APPS: 10.0.4.166, 10.0.4.61
+  BASTION: 3.34.255.54
+  APPS: 10.0.4.134, 10.0.4.52
   AWS_ROLE_ARN: arn:aws:iam::350386634560:role/github-actions-deploy-role
   AWS_REGION: ap-northeast-2
   IMAGE_TAG: ${{ github.sha }}
