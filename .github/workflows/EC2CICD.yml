@@ -10,10 +10,23 @@ on:
 #  pull_request:         ## 주석 해제 시 main 브랜치 PR 이벤트로도 실행
 #    branches: [ "main" ]
 
+env:
+  BASTION: ec2-3-34-132-193.ap-northeast-2.compute.amazonaws.com
+  APPS: 10.0.4.166, 10.0.4.61
+  AWS_ROLE_ARN: arn:aws:iam::350386634560:role/github-actions-deploy-role
+  AWS_REGION: ap-northeast-2
+  IMAGE_TAG: ${{ github.sha }}
+  IMAGE_NAME: shinemuscat-api
+
 jobs:
   build:
     ## 깃헙 호스티드
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write     # ✅ OIDC 인증을 위해 GitHub가 ID 토큰을 발급받을 수 있도록 허용
+      contents: read      # ✅ (예: 코드 checkout 등) 리포지토리의 내용을 읽을 수 있도록 허용
+    outputs:
+      ecr_registry: ${{ steps.ecr.outputs.registry }}
 
     steps:
       ## 저장소 코드 체크아웃 (필수 초기 단계)
@@ -25,8 +38,6 @@ jobs:
         with:
           java-version: '21'
           distribution: 'temurin'
-        env:
-          JAVA_HOME: ${{ env.JAVA_HOME_21_X64 }}  ## 환경변수 강제 설정
 
       ## java 버전 확인
       - name: Check Java Version
@@ -39,82 +50,102 @@ jobs:
       ## Gradle 빌드
       - name: Build with Gradle
         run: ./gradlew clean build --exclude-task test
-      
+
       ## 빌드해서 생긴 JAR 파일을 깃허브 아티팩트로 업로드
-      - name: Upload build artifact
-        uses: actions/upload-artifact@v4
+#      - name: Upload build artifact
+#        uses: actions/upload-artifact@v4
+#        with:
+#          name: github_action
+#          path: |
+#            build/libs/github_action.jar
+#            Dockerfile
+
+      # AWS Credentials
+      - name: Configure AWS credentials 🔑
+        uses: aws-actions/configure-aws-credentials@v4
         with:
-          name: github_action
-          path: |
-            build/libs/github_action.jar
-            Dockerfile
+          role-to-assume: ${{ env.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      # ECR 로그인
+      - name: Login to Amazon ECR
+        id: ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      # ECR 설치
+      - name: Setup ECR Repository
+        uses: deploy-actions/setup-ecr@v1
+        with:
+          RepositoryName: ecr
+
+      # Docker buildx Setup
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          driver: docker # 이거를 설정해야 자동으로 멀티 플랫폼 manifest가 만들어지지 않는다. (명시 해줘야함)
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          platforms: linux/amd64
+          tags: ${{ steps.ecr.outputs.registry }}/ecr:${{ env.IMAGE_TAG }}
 
   deploy:
     runs-on: ubuntu-latest
     needs: [ build ] ## build가 수행되어야만 deploy가 수행
     steps:
       ## 빌드작업한 JAR파일을 아티펙트에서 다운로드
-      - name: Download build artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: github_action
-          path: .
+#      - name: Download build artifact
+#        uses: actions/download-artifact@v4
+#        with:
+#          name: github_action
+#          path: .
 
-      ## EC2에 배포
-      # EC2 SSH 키를 private_key.pem 파일로 저장 ( 위치는 GitHub 서버 )
-      # SCP를 사용하여 JAR 파일을 EC2 서버로 복사
-      - name: SCP JAR file
-        uses: appleboy/scp-action@master
+      - name: Login to Amazon ECR
+        uses: appleboy/ssh-action@v1.2.2
         with:
-          host: ${{secrets.CICD}}
-          username: ${{ secrets.USER }} # EC2 USERNAME
-          key: ${{ secrets.SSH_PRIVATE_KEY }} # EC2 SSH KEY
-          proxy_host: ${{ secrets.BASTION_HOST }}  # EC2 Public IP
-          proxy_username: ${{ secrets.USER }}
-          proxy_key: ${{ secrets.SSH_PRIVATE_KEY }} # EC2 SSH KEY
-          source: "./Dockerfile,build/libs/github_action.jar"
-          target: "/home/${{ secrets.USER }}"
-
-      - name: Push to ECR
-        uses: appleboy/ssh-action@master # github action의 ssh 원격 접속
-        with:
-          host: ${{ secrets.CICD }} # EC2 Public IP
+          host: ${{env.APPS}}
+          key: ${{secrets.SSH_PRIVATE_KEY}}
           username: ${{ secrets.USER }}
           port: 22
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          proxy_host: ${{ secrets.BASTION_HOST }}  # EC2 Public IP
+          proxy_host: ${{ env.BASTION }} # EC2 Public IP
           proxy_username: ${{ secrets.USER }}
           proxy_key: ${{ secrets.SSH_PRIVATE_KEY }}
           proxy_port: 22
           script: |
-            docker image prune -a -f
-            
-            # 기존 이미지를 삭제 (shinemuscat:latest가 존재하는 경우)
-            docker rmi -f ${{ secrets.ECR }}:shinemuscat-api
-            
-            # ecr 로그인
-            aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin ${{ secrets.ECR }}
-            
-            # Docker 이미지 빌드하고 바로 태그 추가
-            docker buildx build -t ${{ secrets.ECR }}:shinemuscat-api -f Dockerfile . --push
+            aws ecr get-login-password --region ${{env.AWS_REGION}} | docker login --username AWS --password-stdin ${{ needs.build.outputs.ecr_registry }}/ecr
+
+      - name: Pull Docker Image From ECR
+        uses: appleboy/ssh-action@v1.2.2
+        with:
+          host: ${{env.APPS}}
+          key: ${{secrets.SSH_PRIVATE_KEY}}
+          username: ubuntu
+          port: 22
+          proxy_host: ${{ env.BASTION }} # EC2 Public IP
+          proxy_username: ${{ secrets.USER }}
+          proxy_key: ${{ secrets.SSH_PRIVATE_KEY }}
+          proxy_port: 22
+          script: |
+            docker pull ${{ needs.build.outputs.ecr_registry }}/ecr:${{env.IMAGE_TAG}}
+            docker images
 
       - name: Pull to ECR and Start Application
         uses: appleboy/ssh-action@master # github action의 ssh 원격 접속
         with:
-          host: "${{ secrets.APP_1 }},${{ secrets.APP_2 }}"
+          host: ${{ env.APPS }}
           username: ${{ secrets.USER }}
           port: 22
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          proxy_host: ${{ secrets.BASTION_HOST }} # EC2 Public IP
+          proxy_host: ${{ env.BASTION }} # EC2 Public IP
           proxy_username: ${{ secrets.USER }}
           proxy_key: ${{ secrets.SSH_PRIVATE_KEY }}
           proxy_port: 22
           script: |
-            docker stop api-1 || true
-            docker rm api-1 || true
-            
-            docker image prune -a -f
-            
-            aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin ${{ secrets.ECR }}
-            docker pull ${{ secrets.ECR }}:shinemuscat-api
-            docker run -d --name api-1 --env PROFILE=aws -p 8080:8080 ${{ secrets.ECR }}:shinemuscat-api
+            docker stop ${{env.IMAGE_NAME}} || true
+            docker rm ${{env.IMAGE_NAME}} || true
+            docker run -d --name ${{env.IMAGE_NAME}} --env PROFILE=aws -p 8080:8080 ${{ needs.build.outputs.ecr_registry }}/ecr:${{ env.IMAGE_TAG }}
+            docker image prune -af
+            docker container prune -f
