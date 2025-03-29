@@ -6,7 +6,7 @@ resource "aws_iam_instance_profile" "ec2_role_profile" {
 
   tags = {
     Name = "${var.common.prefix}-ec2-role-profile"
-  })
+  }
 }
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/instance
