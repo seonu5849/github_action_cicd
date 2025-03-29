@@ -18,16 +18,17 @@ module "ubuntu_launch_template" {
   common = var.common
   ec2_option = local.ec2_option
   security_group_id = module.ec2_security_group.id
+  iam_arn = var.iam_arn
 }
 
-module "cicd" {
-  source = "./instance"
-  name = "cicd"
-  common = var.common
-  launch_template_id = module.ubuntu_launch_template.id
-  vpc_subnet_id = var.vpc_private_subnet_id
-  counts = 1
-}
+# module "cicd" {
+#   source = "./instance"
+#   name = "cicd"
+#   common = var.common
+#   launch_template_id = module.ubuntu_launch_template.id
+#   vpc_subnet_id = var.vpc_private_subnet_id
+#   counts = 1
+# }
 
 module "app" {
   source = "./instance"
