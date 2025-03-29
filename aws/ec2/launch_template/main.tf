@@ -2,7 +2,7 @@
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_instance_profile
 resource "aws_iam_instance_profile" "ec2_role_profile" {
   name = "ec2-role"
-  role = var.iam_arn.name
+  role = var.iam_role.name
 
   tags = {
     Name = "${var.common.prefix}-ec2-role-profile"

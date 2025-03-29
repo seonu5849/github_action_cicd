@@ -51,5 +51,14 @@ resource "aws_iam_role" "github_iam_role" {
 # AmazonEC2ContainerRegistryPowerUser 정책을 IAM Role에 연결
 resource "aws_iam_role_policy_attachment" "attach_ecr_policy" {
   role       = aws_iam_role.github_iam_role.name
-  policy_arn = data.aws_iam_policy.policy.arn
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryPowerUser"
+
+  depends_on = [aws_iam_role.github_iam_role]
+}
+
+resource "aws_iam_role_policy_attachment" "iam-codedeploy-attach" {
+  role       = aws_iam_role.github_iam_role.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSCodeDeployRole"
+
+  depends_on = [aws_iam_role.github_iam_role]
 }

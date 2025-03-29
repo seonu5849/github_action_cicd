@@ -27,18 +27,19 @@ module "ec2" {
   vpc_id = module.vpc.id
   vpc_public_subnet_id = module.vpc.public_subnets[0].id
   vpc_private_subnet_id = module.vpc.private_subnets[0].id
+  iam_role = module.iam.ec2-role
 
   depends_on = [module.vpc]
 }
 
-module "rds" {
-  source = "./rds"
-  common = local.common
-  vpc_id = module.vpc.id
-  vpc_database_subnets = module.vpc.database_subnets
-
-  depends_on = [module.ec2]
-}
+# module "rds" {
+#   source = "./rds"
+#   common = local.common
+#   vpc_id = module.vpc.id
+#   vpc_database_subnets = module.vpc.database_subnets
+#
+#   depends_on = [module.ec2]
+# }
 
 module "vpc" {
   source = "./vpc"
@@ -58,4 +59,26 @@ module "alb" {
   vpc_public_subnet_ids = module.vpc.public_subnets
 
   depends_on = [module.ec2]
+}
+
+module "iam" {
+  source = "./iam"
+  common = local.common
+}
+
+module "asg" {
+  source = "./asg"
+  common = local.common
+  launch_template_id = module.ec2.lunch_template_id
+  vpc_private_subnet_id = module.vpc.private_subnets[0].id
+  alb_target_group = module.alb.alb_target_group
+}
+
+module "code-deploy" {
+  source = "./code-deploy"
+  common = local.common
+  iam_role = module.iam.ec2-role
+  autoscaling-group = module.asg.autoscaling-group
+  alb_listener = module.alb.alb_listener
+  alb_target_group = module.alb.alb_target_group
 }
