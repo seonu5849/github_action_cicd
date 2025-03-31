@@ -2,7 +2,7 @@
 
 AWS_REGION=ap-northeast-2
 ECR_REGISTRY=350386634560.dkr.ecr.ap-northeast-2.amazonaws.com
-IMAGE_TAG=3d2434a0fddbfa7e53cefbad3d3ee887bc2aa106
+IMAGE_TAG=shinemuscat-api
 CONTAINER_NAME=shinemuscat-api
 
 # AWS ECR Login
