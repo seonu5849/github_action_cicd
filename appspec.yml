@@ -1,0 +1,8 @@
+version: 0.0
+os: linux
+
+hooks:
+  ApplicationStop:
+    - location: ./deploy/kill_process.sh
+  ApplicationStart:
+    - location: ./deploy/application_run.sh

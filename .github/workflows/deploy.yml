@@ -103,49 +103,61 @@ jobs:
 #          name: github_action
 #          path: .
 
-      - name: Login to Amazon ECR
-        uses: appleboy/ssh-action@v1.2.2
-        with:
-          host: ${{env.APPS}}
-          key: ${{secrets.SSH_PRIVATE_KEY}}
-          username: ${{ secrets.USER }}
-          port: 22
-          proxy_host: ${{ env.BASTION }} # EC2 Public IP
-          proxy_username: ${{ secrets.USER }}
-          proxy_key: ${{ secrets.SSH_PRIVATE_KEY }}
-          proxy_port: 22
-          script: |
-            aws ecr get-login-password --region ${{env.AWS_REGION}} | docker login --username AWS --password-stdin ${{ needs.build.outputs.ecr_registry }}/ecr
+#      - name: Login to Amazon ECR
+#        uses: appleboy/ssh-action@v1.2.2
+#        with:
+#          host: ${{env.APPS}}
+#          key: ${{secrets.SSH_PRIVATE_KEY}}
+#          username: ${{ secrets.USER }}
+#          port: 22
+#          proxy_host: ${{ env.BASTION }} # EC2 Public IP
+#          proxy_username: ${{ secrets.USER }}
+#          proxy_key: ${{ secrets.SSH_PRIVATE_KEY }}
+#          proxy_port: 22
+#          script: |
+#            aws ecr get-login-password --region ${{env.AWS_REGION}} | docker login --username AWS --password-stdin ${{ needs.build.outputs.ecr_registry }}/ecr
+#
+#      - name: Pull Docker Image From ECR
+#        uses: appleboy/ssh-action@v1.2.2
+#        with:
+#          host: ${{env.APPS}}
+#          key: ${{secrets.SSH_PRIVATE_KEY}}
+#          username: ubuntu
+#          port: 22
+#          proxy_host: ${{ env.BASTION }} # EC2 Public IP
+#          proxy_username: ${{ secrets.USER }}
+#          proxy_key: ${{ secrets.SSH_PRIVATE_KEY }}
+#          proxy_port: 22
+#          script: |
+#            docker pull ${{ needs.build.outputs.ecr_registry }}/ecr:${{env.IMAGE_TAG}}
+#            docker images
+#
+#      - name: Start Application
+#        uses: appleboy/ssh-action@master # github action의 ssh 원격 접속
+#        with:
+#          host: ${{ env.APPS }}
+#          username: ${{ secrets.USER }}
+#          port: 22
+#          key: ${{ secrets.SSH_PRIVATE_KEY }}
+#          proxy_host: ${{ env.BASTION }} # EC2 Public IP
+#          proxy_username: ${{ secrets.USER }}
+#          proxy_key: ${{ secrets.SSH_PRIVATE_KEY }}
+#          proxy_port: 22
+#          script: |
+#            docker stop ${{env.IMAGE_NAME}} || true
+#            docker rm ${{env.IMAGE_NAME}} || true
+#            docker run -d --name ${{env.IMAGE_NAME}} --env PROFILE=aws -p 8080:8080 ${{ needs.build.outputs.ecr_registry }}/ecr:${{ env.IMAGE_TAG }}
+#            docker image prune -af
+#            docker container prune -f
 
-      - name: Pull Docker Image From ECR
-        uses: appleboy/ssh-action@v1.2.2
-        with:
-          host: ${{env.APPS}}
-          key: ${{secrets.SSH_PRIVATE_KEY}}
-          username: ubuntu
-          port: 22
-          proxy_host: ${{ env.BASTION }} # EC2 Public IP
-          proxy_username: ${{ secrets.USER }}
-          proxy_key: ${{ secrets.SSH_PRIVATE_KEY }}
-          proxy_port: 22
-          script: |
-            docker pull ${{ needs.build.outputs.ecr_registry }}/ecr:${{env.IMAGE_TAG}}
-            docker images
+      - name: Replace IMAGE_TAG in application_run.sh
+        run: |
+          sed -i "s/^IMAGE_TAG=.*/IMAGE_TAG=${{ github.sha }}/" ./deploy/application_run.sh
 
-      - name: Pull to ECR and Start Application
-        uses: appleboy/ssh-action@master # github action의 ssh 원격 접속
-        with:
-          host: ${{ env.APPS }}
-          username: ${{ secrets.USER }}
-          port: 22
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          proxy_host: ${{ env.BASTION }} # EC2 Public IP
-          proxy_username: ${{ secrets.USER }}
-          proxy_key: ${{ secrets.SSH_PRIVATE_KEY }}
-          proxy_port: 22
-          script: |
-            docker stop ${{env.IMAGE_NAME}} || true
-            docker rm ${{env.IMAGE_NAME}} || true
-            docker run -d --name ${{env.IMAGE_NAME}} --env PROFILE=aws -p 8080:8080 ${{ needs.build.outputs.ecr_registry }}/ecr:${{ env.IMAGE_TAG }}
-            docker image prune -af
-            docker container prune -f
+      - name: Start CodeDeploy
+        run: |
+          aws deploy create-deployment \
+              --application-name shinemuscat-codedeploy-app \
+              --deployment-group-name shinemuscat-deployment-group \
+              --github-location repository=${{ github.repository }},commitId=${{ github.sha }} \
+              --description "Auto-deploy from ${{ github.ref_name }}"

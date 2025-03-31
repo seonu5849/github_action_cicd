@@ -1,0 +1,22 @@
+#!/bin/bash
+
+AWS_REGION=ap-northeast-2
+ECR_REGISTRY=350386634560.dkr.ecr.ap-northeast-2.amazonaws.com
+IMAGE_TAG=3d2434a0fddbfa7e53cefbad3d3ee887bc2aa106
+CONTAINER_NAME=shinemuscat-api
+
+# AWS ECR Login
+aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REGISTRY/ecr
+
+# Pull From AWS ECR
+docker pull $ECR_REGISTRY/ecr:$IMAGE_TAG
+
+# Docker images
+docker images
+
+# Start Application
+docker run -d --name $CONTAINER_NAME --env PROFILE=aws -p 8080:8080 $ECR_REGISTRY/ecr:$IMAGE_TAG
+
+# Prune Images and Container
+docker image prune -af
+docker container prune -f
