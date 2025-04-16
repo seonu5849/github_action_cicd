@@ -35,9 +35,24 @@ resource "aws_iam_role_policy_attachment" "iam-ecr-attach" {
   depends_on = [aws_iam_role.ec2-role]
 }
 
+resource "aws_iam_role_policy_attachment" "attach-ec2-fullaccess" {
+  role       = aws_iam_role.ec2-role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ReadOnlyAccess"
+
+  depends_on = [aws_iam_role.ec2-role]
+}
+
+
 resource "aws_iam_role_policy_attachment" "iam-codedeploy-attach" {
   role       = aws_iam_role.ec2-role.name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSCodeDeployRole"
+  policy_arn = "arn:aws:iam::aws:policy/AWSCodeDeployFullAccess"
+
+  depends_on = [aws_iam_role.ec2-role]
+}
+
+resource "aws_iam_role_policy_attachment" "attach-autoscaling" {
+  role       = aws_iam_role.ec2-role.name
+  policy_arn = "arn:aws:iam::aws:policy/AutoScalingFullAccess"
 
   depends_on = [aws_iam_role.ec2-role]
 }

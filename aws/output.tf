@@ -1,23 +1,23 @@
 
-# output "rds" {
-#   description = "AURORA"
-#   value = <<EOF
-#     writer : ${module.rds.aurora_cluster_postgres.endpoint}
-#     reader : ${module.rds.aurora_cluster_postgres.reader_endpoint}
-#   EOF
-# }
+output "rds" {
+  description = "AURORA"
+  value = <<EOF
+    writer : ${module.rds.aurora_cluster_postgres.endpoint}
+    reader : ${module.rds.aurora_cluster_postgres.reader_endpoint}
+  EOF
+}
 
 output "bastion_host_public_ip" {
   description = "bastion host public ip"
-  value = module.ec2.bastion_host.public_ip
+  value = "ssh -i shinemuscat.pem ubuntu@${module.ec2.bastion_host.public_ip}"
 }
 
-output "app_instances_private_ip" {
-  description = "apps private ip"
-  value = join("\n", [
-    for app in module.ec2.app_instance_ids : app.private_ip
-  ])
-}
+# output "app_instances_private_ip" {
+#   description = "apps private ip"
+#   value = join("\n", [
+#     for app in module.ec2.app_instance_ids : app.private_ip
+#   ])
+# }
 
 output "ecr_url" {
   description = "ecr_url"

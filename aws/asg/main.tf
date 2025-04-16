@@ -2,14 +2,14 @@
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/autoscaling_group
 resource "aws_autoscaling_group" "autoscaling-group" {
   name               = "${var.common.prefix}-autoscaling-group"
-  desired_capacity   = 1
+  desired_capacity   = 2
   max_size           = 2
   min_size           = 1
 
   # vpc private subnet 연결
   vpc_zone_identifier = [var.vpc_private_subnet_id]
 
-  health_check_type   = "EC2"        # 또는 "ELB" (로드밸런서 연결 시)
+  health_check_type   = "EC2"        # ELB 로드밸런서 연결 시 서비스 상태에 따라 헬스체크 (만약 서비스가 에러를 내보낸다면 인스턴스 종료 후 재생성)
   health_check_grace_period = 300          # 초기 인스턴스 기동 후 몇 초간 상태 체크 보류
 
   # 인스턴스를 축소할 때 어떤 기준으로 종료할지 정의
@@ -23,12 +23,9 @@ resource "aws_autoscaling_group" "autoscaling-group" {
   # 스팟 인스턴스를 사용하는 경우, EC2에서 중단 신호를 받기 전에 대체 인스턴스를 미리 시작
   capacity_rebalance = true
 
-  mixed_instances_policy {
-    launch_template {
-      launch_template_specification {
-        launch_template_id = var.launch_template_id
-      }
-    }
+  launch_template {
+    id = var.launch_template_id
+    version = "$Latest"
   }
 
   tag {

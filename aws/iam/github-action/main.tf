@@ -58,7 +58,7 @@ resource "aws_iam_role_policy_attachment" "attach_ecr_policy" {
 
 resource "aws_iam_role_policy_attachment" "iam-codedeploy-attach" {
   role       = aws_iam_role.github_iam_role.name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSCodeDeployRole"
+  policy_arn = "arn:aws:iam::aws:policy/AWSCodeDeployFullAccess"
 
   depends_on = [aws_iam_role.github_iam_role]
 }

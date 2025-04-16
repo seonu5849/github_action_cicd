@@ -32,14 +32,14 @@ module "ec2" {
   depends_on = [module.vpc]
 }
 
-# module "rds" {
-#   source = "./rds"
-#   common = local.common
-#   vpc_id = module.vpc.id
-#   vpc_database_subnets = module.vpc.database_subnets
-#
-#   depends_on = [module.ec2]
-# }
+module "rds" {
+  source = "./rds"
+  common = local.common
+  vpc_id = module.vpc.id
+  vpc_database_subnets = module.vpc.database_subnets
+
+  depends_on = [module.ec2]
+}
 
 module "vpc" {
   source = "./vpc"
@@ -55,7 +55,7 @@ module "alb" {
   source = "./alb"
   common = local.common
   vpc_id = module.vpc.id
-  app_instance_ids = module.ec2.app_instance_ids
+#   app_instance_ids = module.ec2.app_instance_ids
   vpc_public_subnet_ids = module.vpc.public_subnets
 
   depends_on = [module.ec2]

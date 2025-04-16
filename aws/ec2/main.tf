@@ -30,11 +30,11 @@ module "ubuntu_launch_template" {
 #   counts = 1
 # }
 
-module "app" {
-  source = "./instance"
-  name = "app"
-  common = var.common
-  launch_template_id = module.ubuntu_launch_template.id
-  vpc_subnet_id = var.vpc_private_subnet_id
-  counts = 1
-}
+# module "app" {
+#   source = "./instance"
+#   name = "app"
+#   common = var.common
+#   launch_template_id = module.ubuntu_launch_template.id
+#   vpc_subnet_id = var.vpc_private_subnet_id
+#   counts = 2
+# }

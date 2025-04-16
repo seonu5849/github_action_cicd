@@ -7,6 +7,8 @@ resource "aws_lb" "shinemuscat_alb" {
   security_groups    = [aws_security_group.alb_security_group.id]
   subnets            = [for subnet in var.vpc_public_subnet_ids : subnet.id]
 
+  enable_deletion_protection = false
+
   tags = {
     Name = "${ var.common.prefix }-alb"
   }
@@ -20,13 +22,24 @@ resource "aws_lb_target_group" "shinemuscat_alb_target_group" {
   port     = 8080
   protocol = "HTTP"
   vpc_id   = var.vpc_id
+
+  health_check {
+    enabled             = true
+    path                = "/"
+    interval            = 30
+    timeout             = 5
+    healthy_threshold   = 2
+    unhealthy_threshold = 3
+    matcher             = 200
+    protocol            = "HTTP"
+  }
 }
 
 # #############################################################################################
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lb_listener
 resource "aws_lb_listener" "alb_listener" {
   load_balancer_arn = aws_lb.shinemuscat_alb.arn
-  port              = "8080"
+  port              = "80"
   protocol          = "HTTP"
 
   default_action {
@@ -37,12 +50,12 @@ resource "aws_lb_listener" "alb_listener" {
 
 # #############################################################################################
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lb_target_group_attachment
-resource "aws_lb_target_group_attachment" "shinemuscat_target_group_attachment" {
-  count            = length(var.app_instance_ids)
-  target_group_arn = aws_lb_target_group.shinemuscat_alb_target_group.arn
-  target_id        = var.app_instance_ids[count.index].id
-  port             = 8080
-}
+# resource "aws_lb_target_group_attachment" "shinemuscat_target_group_attachment" {
+#   count            = length(var.app_instance_ids)
+#   target_group_arn = aws_lb_target_group.shinemuscat_alb_target_group.arn
+#   target_id        = var.app_instance_ids[count.index].id
+#   port             = 8080
+# }
 
 # #############################################################################################
 # alb security group
