@@ -10,3 +10,7 @@ output "alb_target_group_green" {
 output "alb_listener" {
   value = aws_lb_listener.alb_listener
 }
+
+output "alb" {
+  value = aws_lb.shinemuscat_alb
+}

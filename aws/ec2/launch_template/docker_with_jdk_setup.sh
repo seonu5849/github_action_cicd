@@ -1,10 +1,10 @@
 #!/bin/bash
 
-# docker setup
+####### docker setup #######
 for pkg in docker.io docker-doc docker-compose docker-compose-v2 podman-docker containerd runc; do sudo apt-get remove $pkg; done
 sudo apt install curl -y
 # Add Docker's official GPG key:
-sudo apt-get update
+sudo apt-get update -y
 sudo apt-get install ca-certificates curl
 sudo install -m 0755 -d /etc/apt/keyrings
 sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
@@ -15,21 +15,24 @@ echo \
   "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
   $(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}") stable" | \
   sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-sudo apt-get update
+sudo apt-get update -y
 
 sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin -y
 
 sudo chmod 666 /var/run/docker.sock
-sudo apt update
 
-# jdk setup
+####### jdk setup #######
 sudo apt install openjdk-21-jre-headless -y
-sudo apt update
 
-# aws setup
+####### aws setup #######
 sudo snap install aws-cli --classic
-sudo apt update
+sudo apt update -y
 
-# amazon-ecr-credential-helper setup (ecr 인증정보 helper)
-sudo apt install amazon-ecr-credential-helper
-sudo apt update
+####### code deploy agent #######
+sudo apt update -y
+sudo apt install ruby wget -y
+cd /home/ubuntu
+wget https://aws-codedeploy-ap-northeast-2.s3.amazonaws.com/latest/install
+chmod +x ./install
+sudo ./install auto
+sudo systemctl start codedeploy-agent

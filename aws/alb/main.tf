@@ -17,8 +17,26 @@ resource "aws_lb" "shinemuscat_alb" {
 # #############################################################################################
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lb_target_group
 # instance
-resource "aws_lb_target_group" "shinemuscat_alb_target_group" {
-  name     = "${ var.common.prefix }-alb-target-group"
+resource "aws_lb_target_group" "shinemuscat_alb_target_group_blue" {
+  name     = "${ var.common.prefix }-atg-blue"
+  port     = 8080
+  protocol = "HTTP"
+  vpc_id   = var.vpc_id
+
+  health_check {
+    enabled             = true
+    path                = "/"
+    interval            = 30
+    timeout             = 5
+    healthy_threshold   = 2
+    unhealthy_threshold = 3
+    matcher             = 200
+    protocol            = "HTTP"
+  }
+}
+
+resource "aws_lb_target_group" "shinemuscat_alb_target_group_green" {
+  name     = "${ var.common.prefix }-atg-green"
   port     = 8080
   protocol = "HTTP"
   vpc_id   = var.vpc_id
@@ -44,7 +62,7 @@ resource "aws_lb_listener" "alb_listener" {
 
   default_action {
     type             = "forward"
-    target_group_arn = aws_lb_target_group.shinemuscat_alb_target_group.arn
+    target_group_arn = aws_lb_target_group.shinemuscat_alb_target_group_blue.arn
   }
 }
 

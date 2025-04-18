@@ -71,7 +71,7 @@ module "asg" {
   common = local.common
   launch_template_id = module.ec2.lunch_template_id
   vpc_private_subnet_id = module.vpc.private_subnets[0].id
-  alb_target_group = module.alb.alb_target_group
+  alb_target_group_blue = module.alb.alb_target_group_blue
 }
 
 module "code-deploy" {
@@ -79,6 +79,9 @@ module "code-deploy" {
   common = local.common
   iam_role = module.iam.ec2-role
   autoscaling-group = module.asg.autoscaling-group
+
+  alb = module.alb.alb
   alb_listener = module.alb.alb_listener
-  alb_target_group = module.alb.alb_target_group
+  alb_target_group_blue = module.alb.alb_target_group_blue
+  alb_target_group_green = module.alb.alb_target_group_green
 }

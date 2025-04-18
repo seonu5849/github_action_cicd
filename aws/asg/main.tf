@@ -18,7 +18,7 @@ resource "aws_autoscaling_group" "autoscaling-group" {
   termination_policies = ["OldestInstance", "ClosestToNextInstanceHour"]
 
   # 로드 밸런서 대상 그룹과 연동할 경우 필요
-  target_group_arns = [var.alb_target_group.arn]
+  target_group_arns = [var.alb_target_group_blue.arn]
 
   # 스팟 인스턴스를 사용하는 경우, EC2에서 중단 신호를 받기 전에 대체 인스턴스를 미리 시작
   capacity_rebalance = true
