@@ -1,8 +1,22 @@
 version: 0.0
 os: linux
 
+# 인스턴스에 복사할 수정된 파일 또는 디렉토리 설정
+files:
+  - source: /
+    destination: /home/ubuntu/
+    overwrite: yes
+
+# files 섹션에서 정의한 파일이 인스턴스에 복사된 후 해당 파일에 권한이 어떻게 적용되어야 하는지를 지정
+permissions:
+  - object: /home/ubuntu
+    owner: ubuntu
+    group: ubuntu
+
 hooks:
   ApplicationStop:
     - location: ./deploy/kill_process.sh
+      runas: ubuntu
   ApplicationStart:
     - location: ./deploy/application_run.sh
+      runas: ubuntu
