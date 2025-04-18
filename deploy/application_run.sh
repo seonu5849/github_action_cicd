@@ -9,7 +9,7 @@ aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --
 
 # latest image name
 IMAGE_TAG=$(aws ecr describe-images \
-  --repository-name $ECR_REPOSITORY_NAME \
+  --repository-name ecr \
   --query 'sort_by(imageDetails,& imagePushedAt)[-1].imageTags[0]' \
   --output text)
 
