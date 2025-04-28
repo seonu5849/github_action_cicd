@@ -19,13 +19,13 @@ resource "aws_lb" "shinemuscat_alb" {
 # instance
 resource "aws_lb_target_group" "shinemuscat_alb_target_group_blue" {
   name     = "${ var.common.prefix }-atg-blue"
-  port     = 8080
+  port     = 80
   protocol = "HTTP"
   vpc_id   = var.vpc_id
 
   health_check {
     enabled             = true
-    path                = "/"
+    path                = "/health"
     interval            = 30
     timeout             = 5
     healthy_threshold   = 2
@@ -37,13 +37,13 @@ resource "aws_lb_target_group" "shinemuscat_alb_target_group_blue" {
 
 resource "aws_lb_target_group" "shinemuscat_alb_target_group_green" {
   name     = "${ var.common.prefix }-atg-green"
-  port     = 8080
+  port     = 80
   protocol = "HTTP"
   vpc_id   = var.vpc_id
 
   health_check {
     enabled             = true
-    path                = "/"
+    path                = "/health"
     interval            = 30
     timeout             = 5
     healthy_threshold   = 2
@@ -62,6 +62,28 @@ resource "aws_lb_listener" "alb_listener" {
 
   default_action {
     type             = "forward"
+    target_group_arn = aws_lb_target_group.shinemuscat_alb_target_group_blue.arn
+  }
+
+  tags = {
+    name = "${var.common.prefix}_alb_listener"
+  }
+}
+
+# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lb_listener_rule
+# 모든 경로와 일치하는 요청을 ASG가 포함된 대상 그룹으로 보냄
+resource "aws_lb_listener_rule" "terraform-lbrule" {
+  listener_arn = aws_lb_listener.alb_listener.arn
+  priority = 100
+
+  condition {
+    path_pattern {
+      values = ["*"]
+    }
+  }
+
+  action {
+    type = "forward"
     target_group_arn = aws_lb_target_group.shinemuscat_alb_target_group_blue.arn
   }
 }

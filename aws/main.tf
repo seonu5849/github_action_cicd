@@ -72,6 +72,7 @@ module "asg" {
   launch_template_id = module.ec2.lunch_template_id
   vpc_private_subnet_id = module.vpc.private_subnets[0].id
   alb_target_group_blue = module.alb.alb_target_group_blue
+  alb_target_group_green = module.alb.alb_target_group_green
 }
 
 module "code-deploy" {

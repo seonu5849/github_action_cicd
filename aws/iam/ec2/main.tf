@@ -56,3 +56,30 @@ resource "aws_iam_role_policy_attachment" "attach-autoscaling" {
 
   depends_on = [aws_iam_role.ec2-role]
 }
+
+resource "aws_iam_role_policy_attachment" "attach-codedeploy" {
+  role       = aws_iam_role.ec2-role.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSCodeDeployRole"
+
+  depends_on = [aws_iam_role.ec2-role]
+}
+
+resource "aws_iam_role_policy" "codedeploy_autoscaling_custom_policy" {
+  name = "CodeDeployAutoScalingPermissions"
+  role = aws_iam_role.ec2-role.name
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Action = [
+          "iam:PassRole",
+          "ec2:CreateTags",
+          "ec2:RunInstances"
+        ],
+        Resource = "*"
+      }
+    ]
+  })
+}

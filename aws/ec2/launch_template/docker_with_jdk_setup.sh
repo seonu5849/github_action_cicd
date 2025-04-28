@@ -24,9 +24,6 @@ sudo chmod 666 /var/run/docker.sock
 ####### jdk setup #######
 sudo apt install openjdk-21-jre-headless -y
 
-####### aws setup #######
-sudo snap install aws-cli --classic
-sudo apt update -y
 
 ####### code deploy agent #######
 sudo apt update -y
@@ -36,3 +33,22 @@ wget https://aws-codedeploy-ap-northeast-2.s3.amazonaws.com/latest/install
 chmod +x ./install
 sudo ./install auto
 sudo systemctl start codedeploy-agent
+
+####### aws setup #######
+#sudo snap install aws-cli --classic
+#sudo apt update -y
+
+####### aws setup (binary 방식) #######
+sudo apt-get install unzip -y
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+unzip awscliv2.zip
+sudo ./aws/install
+
+### temp server ###
+sudo apt install -y nginx
+
+# 헬스 체크용 경로 추가
+echo "OK" | sudo tee /var/www/html/health
+
+# nginx 설정 확인 및 재시작
+sudo systemctl restart nginx

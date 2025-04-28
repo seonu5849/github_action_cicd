@@ -29,6 +29,10 @@ resource "aws_launch_template" "ubuntu_with_docker" {
 
   user_data = filebase64("${path.module}/docker_with_jdk_setup.sh")
 
+  lifecycle {
+    create_before_destroy = true
+  }
+
   tags = {
     Name = "${var.common.prefix}-launch-template-ubuntu-with-docker"
   }

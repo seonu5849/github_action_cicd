@@ -2,8 +2,8 @@
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/autoscaling_group
 resource "aws_autoscaling_group" "autoscaling-group" {
   name               = "${var.common.prefix}-autoscaling-group"
-  desired_capacity   = 2
-  max_size           = 2
+  desired_capacity   = 1
+  max_size           = 1
   min_size           = 1
 
   # vpc private subnet 연결
@@ -18,7 +18,7 @@ resource "aws_autoscaling_group" "autoscaling-group" {
   termination_policies = ["OldestInstance", "ClosestToNextInstanceHour"]
 
   # 로드 밸런서 대상 그룹과 연동할 경우 필요
-  target_group_arns = [var.alb_target_group_blue.arn]
+  target_group_arns = [var.alb_target_group_blue.arn, var.alb_target_group_green.arn]
 
   # 스팟 인스턴스를 사용하는 경우, EC2에서 중단 신호를 받기 전에 대체 인스턴스를 미리 시작
   capacity_rebalance = true
